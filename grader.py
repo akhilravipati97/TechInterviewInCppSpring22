@@ -1,7 +1,9 @@
 from datetime import datetime
 from datetime import timedelta
+from platform.base import Grading, User, Contest
 from constants import EST_TZINFO
 from platform.codeforces import Codeforces
+from platform.atcoder import Atcoder
 from util.datetime import get_course_week
 from util.log import get_logger
 import traceback
@@ -11,28 +13,27 @@ LOG = get_logger("Grader")
 
 # Main constants
 # NOTE: Can't move to constants.py cuz circular dependency
-PLATFORMS = [Codeforces()]
+PLATFORMS = [Atcoder()]
 
 # Testing this for now
 def main():
-    dt = datetime.now(EST_TZINFO) - timedelta(days=7)
-    start_dt, end_dt, week_num = get_course_week(dt)
-    LOG.debug(f"Checking for week_num: {week_num} with {start_dt} to {end_dt}")
+    gd = Grading(delta=timedelta(days=7))
+    LOG.debug(f"Checking for week_num: {gd.week_num} with {gd.week_start_dt} to {gd.week_end_dt}")
 
-    PLATFORM_CONTESTS = {platform: platform.all_contests(start_dt, end_dt) for platform in PLATFORMS}
+    PLATFORM_CONTESTS = {platform: platform.all_contests(gd) for platform in PLATFORMS}
     
-    user_id = "yin929"
+    usr = User("yin929")
     point_map = defaultdict(int)
     for platform, contests in PLATFORM_CONTESTS.items():
-        for contest_id in contests:
+        for ct in contests:
             try:
-                point_map[platform.name()] += platform.successful_submissions(contest_id, user_id)
+                point_map[platform.name()] += platform.successful_submissions(gd, ct, usr)
             except Exception as e:
                 traceback.print_exc(e)
                 LOG.error(f"Exception for {platform.name()} ^")
 
-    LOG.info(f"[GRADER]: Points map for user: {user_id} is: {point_map}")
-    LOG.info(f"[GRADER]: Num points for user: {user_id} is {sum(point_map.values())}")
+    LOG.info(f"[GRADER]: Points map for user: {usr.user_id} is: {point_map}")
+    LOG.info(f"[GRADER]: Num points for user: {usr.user_id} is {sum(point_map.values())}")
 
 
 
