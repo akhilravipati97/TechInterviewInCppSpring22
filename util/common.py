@@ -1,8 +1,9 @@
-import logging_init
+from util.log import get_logger
 
-LOG = logging_init.tic_logger
+LOG = get_logger("common")
+
 
 # Log and raise exception
-def fail(s: str):
-    LOG.error(s)
+def fail(s: str, logger = LOG):
+    logger.error(s)
     raise Exception(s)
