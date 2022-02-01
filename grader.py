@@ -1,9 +1,10 @@
 from datetime import datetime
 from datetime import timedelta
-from platform.base import Grading, User, Contest
+from contest_platform.base import Grading, User, Contest
 from constants import EST_TZINFO
-from platform.codeforces import Codeforces
-from platform.atcoder import Atcoder
+from contest_platform.codeforces import Codeforces
+from contest_platform.atcoder import Atcoder
+from contest_platform.codechef import Codechef
 from util.datetime import get_course_week
 from util.log import get_logger
 import traceback
@@ -13,7 +14,7 @@ LOG = get_logger("Grader")
 
 # Main constants
 # NOTE: Can't move to constants.py cuz circular dependency
-PLATFORMS = [Atcoder()]
+PLATFORMS = [Codechef()]
 
 # Testing this for now
 def main():

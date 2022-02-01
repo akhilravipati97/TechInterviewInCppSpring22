@@ -1,9 +1,9 @@
 from typing import List
 from util.log import get_logger
-from platform.base import PlatformBase, Grading, User, Contest
+from contest_platform.base import PlatformBase, Grading, User, Contest
 from datetime import datetime
 import requests as r
-from util.datetime import in_between_dt, to_dt
+from util.datetime import in_between_dt, to_dt_from_ts
 from util.common import fail
 
 LOG = get_logger("Codeforces")
@@ -45,7 +45,7 @@ class Codeforces(PlatformBase):
             fail(f"No contests found")
 
         contests = contests["result"]
-        contests = [{**contest, "startDatetime": to_dt(int(contest["startTimeSeconds"])*1000)} for contest in contests]
+        contests = [{**contest, "startDatetime": to_dt_from_ts(int(contest["startTimeSeconds"])*1000)} for contest in contests]
         contests = [contest for contest in contests if in_between_dt(contest["startDatetime"], gd.week_start_dt, gd.week_end_dt)]
         LOG.debug(f"Contests: {contests}")
         return [Contest(str(contest["id"])) for contest in contests]

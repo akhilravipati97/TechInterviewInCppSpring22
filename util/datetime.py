@@ -35,8 +35,11 @@ def get_course_week(est_date: datetime) -> Tuple[datetime, datetime, int]:
             return [TIC_WEEK_START_DATES[i-1], TIC_WEEK_START_DATES[i] - timedelta(seconds=1), i]
 
 
-def to_dt(epoch_millis: int) -> datetime:
+def to_dt_from_ts(epoch_millis: int) -> datetime:
     return datetime.fromtimestamp(epoch_millis/1000.0, tz=EST_TZINFO)
+
+def to_dt_from_fmt(date_str: str, fmt: str) -> datetime:
+    fail("Unimplemented to_dt_from_fmt")
 
 
 def in_between_dt(target_dt: datetime, start_dt: datetime, end_dt: datetime) -> bool:

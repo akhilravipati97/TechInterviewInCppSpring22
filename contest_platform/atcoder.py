@@ -1,10 +1,10 @@
 from typing import List
 from util.web import WebRequest
 from util.log import get_logger
-from platform.base import PlatformBase, Grading, User, Contest
+from contest_platform.base import PlatformBase, Grading, User, Contest
 from datetime import datetime, timedelta
 import requests as r
-from util.datetime import in_between_dt, to_dt
+from util.datetime import in_between_dt, to_dt_from_ts
 from constants import EST_TZINFO
 from util.common import fail
 
@@ -57,7 +57,7 @@ class Atcoder(PlatformBase):
         if (contests is None) or (len(contests) == 0):
             fail(f"No contests found", LOG)
 
-        contests = [{**contest, "startDatetime": to_dt(int(contest["start_epoch_second"])*1000)} for contest in contests]
+        contests = [{**contest, "startDatetime": to_dt_from_ts(int(contest["start_epoch_second"])*1000)} for contest in contests]
         contests = [contest for contest in contests if in_between_dt(contest["startDatetime"], gd.week_start_dt, gd.week_end_dt)]
         LOG.debug(f"Contests: {contests}")
         return [Contest(str(contest["id"])) for contest in contests]
