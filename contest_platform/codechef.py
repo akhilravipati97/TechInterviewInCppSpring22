@@ -126,7 +126,7 @@ class Codechef(PlatformBase):
 
         contests = [{**contest, "startDatetime": datetime.fromisoformat(contest["contest_start_date_iso"])} for contest in child_contests]
         contests = [contest for contest in contests if in_between_dt(contest["startDatetime"], gd.week_start_dt, gd.week_end_dt)]
-        LOG.debug(f"Contests: {contests}")
+        LOG.debug(f"Contests: {[c['child_contest_code'] for c in contests]}")
         return [Contest(str(contest["child_contest_code"])) for contest in contests]
         
 
@@ -146,27 +146,33 @@ class Codechef(PlatformBase):
 
         driver = Codechef.WR.scrape(submissions_url)
 
-        # Get table headers for problem names
-        th_vals = driver.find_elements_by_css_selector("table[class='dataTable'] > thead > tr > th")
-        LOG.debug(f"Num th found: {len(th_vals)}")
-        th_vals = th_vals[5:] # The 5th name onwards are the problem names
-        problem_names = [th_val.find_element_by_css_selector("a > div:nth-child(2)").text.strip() for th_val in th_vals]
-        LOG.debug(f"problem names: {problem_names}")
-
         # Get user's accepted solutions
         tr_vals = driver.find_elements_by_css_selector("table[class='dataTable'] > tbody > tr")
         LOG.debug(f"Num tr found: {len(tr_vals)}")
-        if len(tr_vals) != 1:
+        if len(tr_vals) not in [0, 1]:
             fail(f"Unexpected count: [{len(tr_vals)}] of ranking found for: [{submissions_url}]")
-            
-        div_vals = tr_vals[0].find_element_by_css_selector("td > div")
-        LOG.debug(f"Num div found: {len(div_vals)}")
-        div_vals = div_vals[5:] # The 5th onwards are the actual problems
+        if len(tr_vals) == 0:
+            LOG.debug(f"No submissions found for user: [{usr.user_id}] in contest: [{ct.contest_id}]")
+            return 0
+        td_vals = tr_vals[0].find_elements_by_css_selector("td")
+        LOG.debug(f"Num div found: {len(td_vals)}")
+        td_vals = td_vals[4:] # The 5th onwards are the actual problems
+
+
+        # Get table headers for problem names
+        th_vals = driver.find_elements_by_css_selector("table[class='dataTable'] > thead > tr > th")
+        LOG.debug(f"Num th found: {len(th_vals)}")
+        th_vals = th_vals[4:] # The 5th name onwards are the problem names
+        problem_names = [th_val.find_element_by_css_selector("a > div:nth-child(2)").text.strip() for th_val in th_vals]
+        LOG.debug(f"problem names: {problem_names}")
+
 
         solved_questions = set()
-        for i, val in enumerate(div_vals):
-            has_answered = val.find_elements_by_css_selector("a")
-            if has_answered:
+        for i, val in enumerate(td_vals):
+            LOG.debug(f"[MAJOR*****] val: {val.text}")
+            has_answered = val.find_elements_by_css_selector("div > a")
+            if len(has_answered) > 0:
+                LOG.debug(f"[MAJOR NEXT*****] len: {len(has_answered)}, first val: {has_answered[0].text}")
                 solved_questions.add(problem_names[i])
 
         LOG.debug(f"User [{usr.user_id}] in contest [{ct.contest_id}] solved these questions: [{solved_questions}]")

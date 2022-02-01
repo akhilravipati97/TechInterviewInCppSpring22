@@ -30,7 +30,7 @@ def main():
             try:
                 point_map[platform.name()] += platform.successful_submissions(gd, ct, usr)
             except Exception as e:
-                traceback.print_exc(e)
+                traceback.print_exc()
                 LOG.error(f"Exception for {platform.name()} ^")
 
     LOG.info(f"[GRADER]: Points map for user: {usr.user_id} is: {point_map}")

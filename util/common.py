@@ -7,3 +7,4 @@ LOG = get_logger("common")
 def fail(s: str, logger = LOG):
     logger.error(s)
     raise Exception(s)
+
