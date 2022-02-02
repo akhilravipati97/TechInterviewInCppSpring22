@@ -1,3 +1,4 @@
+from email import header
 import time
 from util.log import get_logger
 import uuid
@@ -30,13 +31,22 @@ class WebRequest:
         self.last_request_ts_millis = req_ts_millis
 
     def scrape(self, url: str) -> webdriver.Chrome:
-        LOG.debug(f"SCRAPE: {url}")
+        LOG.debug(f"SCRAPE: [{url}]")
         self.__rate_limit()
         driver = webdriver.Chrome(options=self.scraper_options, executable_path=str(CHROME_DRIVER_PATH))
         driver.get(url)
         return driver        
 
     def get(self, url: str) -> dict:
-        LOG.debug(f"GET: {url}")
+        LOG.debug(f"GET: [{url}]")
         self.__rate_limit()
         return r.get(url).json()
+
+    def post(self, url: str, data: dict = None, headers: dict = None):
+        LOG.debug(f"POST: [{url}] with data: [{data}] and headers: [{headers}]")
+        self.__rate_limit()
+        if data is not None:
+            if headers is not None:
+                return r.post(url, data=data, headers=headers)
+            return r.post(url, data=data)
+        return r.post(url)

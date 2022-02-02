@@ -5,6 +5,7 @@ from constants import EST_TZINFO
 from contest_platform.codeforces import Codeforces
 from contest_platform.atcoder import Atcoder
 from contest_platform.codechef import Codechef
+from contest_platform.leetcode import Leetcode
 from util.datetime import get_course_week
 from util.log import get_logger
 import traceback
@@ -14,7 +15,7 @@ LOG = get_logger("Grader")
 
 # Main constants
 # NOTE: Can't move to constants.py cuz circular dependency
-PLATFORMS = [Codechef()]
+PLATFORMS = [Leetcode()]
 
 # Testing this for now
 def main():
@@ -23,7 +24,7 @@ def main():
 
     PLATFORM_CONTESTS = {platform: platform.all_contests(gd) for platform in PLATFORMS}
     
-    usr = User("yin929")
+    usr = User("yincheng929") # User("yin929")
     point_map = defaultdict(int)
     for platform, contests in PLATFORM_CONTESTS.items():
         for ct in contests:
