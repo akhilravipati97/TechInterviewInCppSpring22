@@ -26,13 +26,6 @@ class Leetcode(PlatformBase):
     CONTESTS_URL = "https://leetcode.com/graphql"
     CONTESTS_URL_POST_REQUEST = r'{"operationName":null,"variables":{},"query":"{\n  brightTitle\n  currentTimestamp\n  allContests {\n    containsPremium\n    title\n    titleSlug\n    startTime\n    duration\n    originStartTime\n    isVirtual\n  }\n}\n"}'
     CONTESTS_URL_HEADERS = {"Content-type": "application/json"}
-
-    # Each parent contest has a bunch of child contests based on ratings - div1, div2 etc.
-    CHILD_CONTESTS_URL = "https://www.codechef.com/api/contests/{contest_code}"
-    
-    # https://www.codechef.com/api/contests/COOK127?v=1643691157039
-    # https://www.codechef.com/api/rankings/START22A?sortBy=rank&order=asc&search=jo3kerr&page=1&itemsPerPage=25
-    SUBMISSIONS_URL = "https://www.codechef.com/rankings/{child_contest_id}?order=asc&search={user_id}&sortBy=rank"
     WR = WebRequest(rate_limit_millis=1000)
 
 
