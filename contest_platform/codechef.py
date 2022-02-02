@@ -81,8 +81,8 @@ class Codechef(PlatformBase):
                 if in_between_dt(curr_contest_dt, gd.week_start_dt, gd.week_end_dt):
                     parent_contests.append(curr_contest)
 
-            if datetime.fromisoformat(curr_contests[-1]["contest_start_date_iso"]) < gd.week_end_dt:
-                LOG.debug(f"Breaking because {curr_contests[-1]['contest_start_date_iso']} is older that {gd.week_end_dt}")
+            if datetime.fromisoformat(curr_contests[-1]["contest_start_date_iso"]) < gd.week_start_dt:
+                LOG.debug(f"Breaking because {curr_contests[-1]['contest_start_date_iso']} is older that {gd.week_start_dt}")
                 break
             else:
                 curr_offset += Codechef.CONTESTS_URL_OFFSET_DIFF
