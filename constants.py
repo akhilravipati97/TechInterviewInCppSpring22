@@ -4,6 +4,7 @@ import pytz
 from pathlib import Path
 
 # Timezone constants
+UTC_TZINFO = pytz.timezone("UTC")
 EST_TZINFO = pytz.timezone("America/New_York")
 EST_TZINFO = pytz.timezone("America/New_York")
 EST_DATE_INIT = datetime.now(EST_TZINFO)

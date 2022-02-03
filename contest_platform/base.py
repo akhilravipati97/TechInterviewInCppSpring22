@@ -1,22 +1,10 @@
-from datetime import datetime, timedelta
 from typing import List
-from util.datetime import get_course_week
-from constants import EST_TZINFO
+from model.user import User
+from model.contest import Contest
+from model.grading import Grading
 
-class Grading:
-    def __init__(self, delta: timedelta()) -> None:
-        self.grading_dt = datetime.now(EST_TZINFO) - delta
-        self.week_start_dt, self.week_end_dt, self.week_num = get_course_week(self.grading_dt)
 
-class Contest:
-    def __init__(self, contest_id: str) -> None:
-        self.contest_id = contest_id
-
-class User:
-    def __init__(self, user_id: str) -> None:
-        self.user_id = user_id
-
-class PlatformBase:
+class ContestPlatformBase:
     def name() -> str:
         raise Exception("Unimplemented name")
 

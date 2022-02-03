@@ -1,7 +1,7 @@
 from typing import List
 from util.web import WebRequest
 from util.log import get_logger
-from contest_platform.base import PlatformBase, Grading, User, Contest
+from contest_platform.base import ContestPlatformBase, Grading, User, Contest
 from datetime import datetime, timedelta
 import requests as r
 from util.datetime import in_between_dt, to_dt_from_ts
@@ -12,7 +12,7 @@ from math import ceil
 LOG = get_logger("Leetcode")
 
 
-class Leetcode(PlatformBase):
+class Leetcode(ContestPlatformBase):
     """
         Leetcode does not have an official API. Scraping is possible, but for things that matter
         leetcode uses simple GraphQL API calls to fetch data that seem to not need authentication.

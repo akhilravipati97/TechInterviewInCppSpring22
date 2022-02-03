@@ -1,7 +1,7 @@
 from typing import List
 from util.web import WebRequest
 from util.log import get_logger
-from contest_platform.base import PlatformBase, Grading, User, Contest
+from contest_platform.base import ContestPlatformBase, Grading, User, Contest
 from datetime import datetime, timedelta
 import requests as r
 from util.datetime import in_between_dt, to_dt_from_ts
@@ -12,7 +12,7 @@ LOG = get_logger("Atcoder")
 
 # https://github.com/kenkoooo/AtCoderProblems/blob/master/doc/api.md
 
-class Atcoder(PlatformBase):
+class Atcoder(ContestPlatformBase):
     """
         Atcoder does not have an official API. Scraping is possible with login.
 

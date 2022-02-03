@@ -1,7 +1,7 @@
 from typing import List
 from util.web import WebRequest
 from util.log import get_logger
-from contest_platform.base import PlatformBase, Grading, User, Contest
+from contest_platform.base import ContestPlatformBase, Grading, User, Contest
 from datetime import datetime, timedelta
 import requests as r
 from util.datetime import in_between_dt, to_dt_from_ts
@@ -11,7 +11,7 @@ from util.common import fail
 LOG = get_logger("Dmoj")
 
 
-class Dmoj(PlatformBase):
+class Dmoj(ContestPlatformBase):
     """
         Dmoj has an official API. They say they need API tokens, but for now public access is working just fine.
 
@@ -91,11 +91,11 @@ class Dmoj(PlatformBase):
 
 
     def __get_points(self, usr: User, ct: Contest) -> int:
-        if usr.user_id not in Dmoj.DMOJ_POINTS_CACHE[ct.contest_id]:
+        if usr.user_id not in Dmoj.POINTS_CACHE[ct.contest_id]:
             LOG.info(f"user: [{usr.user_id}] not found in points cache for contest: [{ct.contest_id}]")
             return 0
 
-        val = Dmoj.DMOJ_POINTS_CACHE[ct.contest_id][usr.user_id]
+        val = Dmoj.POINTS_CACHE[ct.contest_id][usr.user_id]
         if val["is_disqualified"]:
             LOG.warn(f"user: [{usr.user_id}] is disqualified in [{ct.contest_id}], returning 0 points")
             return 0

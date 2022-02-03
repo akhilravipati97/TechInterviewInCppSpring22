@@ -37,10 +37,16 @@ class WebRequest:
         driver.get(url)
         return driver        
 
-    def get(self, url: str) -> dict:
+    def get(self, url: str, is_json=True):
+        """
+        Returns dict if is_json is True, else string.
+        """
         LOG.debug(f"GET: [{url}]")
         self.__rate_limit()
-        return r.get(url).json()
+        resp = r.get(url)
+        if is_json:
+            return resp.json()
+        return resp.text
 
     def post(self, url: str, data: dict = None, headers: dict = None):
         LOG.debug(f"POST: [{url}] with data: [{data}] and headers: [{headers}]")

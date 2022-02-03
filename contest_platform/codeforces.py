@@ -1,6 +1,6 @@
 from typing import List
 from util.log import get_logger
-from contest_platform.base import PlatformBase, Grading, User, Contest
+from contest_platform.base import ContestPlatformBase, Grading, User, Contest
 from datetime import datetime
 import requests as r
 from util.datetime import in_between_dt, to_dt_from_ts
@@ -8,7 +8,7 @@ from util.common import fail
 
 LOG = get_logger("Codeforces")
 
-class Codeforces(PlatformBase):
+class Codeforces(ContestPlatformBase):
     PLATFORM = "Codeforces"
     CONTESTS_URL = "https://codeforces.com/api/contest.list"
     SUBMISSIONS_URL = "https://codeforces.com/api/contest.status?contestId={contest_id}&handle={user_id}"
