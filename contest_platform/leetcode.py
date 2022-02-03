@@ -7,6 +7,7 @@ import requests as r
 from util.datetime import in_between_dt, to_dt_from_ts
 from constants import EST_TZINFO
 from util.common import fail
+from math import ceil
 
 LOG = get_logger("Leetcode")
 
@@ -26,7 +27,13 @@ class Leetcode(PlatformBase):
     CONTESTS_URL = "https://leetcode.com/graphql"
     CONTESTS_URL_POST_REQUEST = r'{"operationName":null,"variables":{},"query":"{\n  brightTitle\n  currentTimestamp\n  allContests {\n    containsPremium\n    title\n    titleSlug\n    startTime\n    duration\n    originStartTime\n    isVirtual\n  }\n}\n"}'
     CONTESTS_URL_HEADERS = {"Content-type": "application/json"}
+
+    RANKINGS_URL = "https://leetcode.com/contest/api/ranking/{contest_id}/?pagination={page_num}&region=global"
+    RANKINGS_URL_HEADERS = {"Content-type": "application/json"}
+    RANKINGS_PER_PAGE = 25
     WR = WebRequest(rate_limit_millis=1000)
+
+    POINTS_CACHE = dict()
 
 
     def name(self):
@@ -60,7 +67,7 @@ class Leetcode(PlatformBase):
                     ...
         """
         
-        contests = Leetcode.WR.post(Leetcode.CONTESTS_URL, data=Leetcode.CONTESTS_URL_POST_REQUEST, headers=Leetcode.CONTESTS_URL_HEADERS).json()
+        contests = Leetcode.WR.post(Leetcode.CONTESTS_URL, data=Leetcode.CONTESTS_URL_POST_REQUEST, headers=Leetcode.CONTESTS_URL_HEADERS)
         if (contests is None) or (contests["data"] is None) or (len(contests["data"]["allContests"]) == 0):
             fail(f"No contests found", LOG)
 
@@ -75,7 +82,17 @@ class Leetcode(PlatformBase):
                 break
                 
         LOG.debug(f"Contests: {[contest['title'] for contest in curr_contests]}")
-        return [Contest(str(contest["title"])) for contest in curr_contests]
+        return [Contest(str(contest["titleSlug"])) for contest in curr_contests]
+
+    
+    def __get_points(self, usr: User, ct: Contest) -> int:
+        if usr.user_id not in Leetcode.LEETCODE_POINTS_CACHE[ct.contest_id]:
+            LOG.info(f"user: [{usr.user_id}] not found in points cache for contest: [{ct.contest_id}].")
+            return 0
+        
+        val = Leetcode.LEETCODE_POINTS_CACHE[ct.contest_id][usr.user_id]
+        LOG.debug(f"user: [{usr.user_id}] in contest: [{ct.contest_id}] solved these questions: [{val}]")
+        return len(val)
         
 
     def successful_submissions(self, gd: Grading, ct: Contest, usr: User) -> int:
@@ -88,10 +105,61 @@ class Leetcode(PlatformBase):
                might appear on leetcode rankings page and cross-check that.
             2. Pre-process all contest rankings. There are about 500 pages of rankings per contest to scrape.
                Could be a background process that does this as soon as previous grading week deadline ends.
+
             
+            Going the pre-processing route for now.
+
+            NOTE: With rate-limiting pre-processing can take a lot of time here, so best to pre-process even earlier
             
             Sample: https://leetcode.com/contest/weekly-contest-278/ranking/398/
+
+            Sample Json:
+
         """
-        return 0
+
+        if ct.contest_id in Leetcode.POINTS_CACHE:
+            self.__get_points(usr, ct)
+
+        
+        page_num_total = float('inf')
+        page_num = 1
+        cache_dict = dict()
+        short_circuit = False
+        while short_circuit or (page_num <= page_num_total):     
+            rankings_url = Leetcode.RANKINGS_URL.format(contest_id=ct.contest_id, page_num=page_num)
+            LOG.debug(f"Rankings url is: [{rankings_url}]")
+
+            rankings = Leetcode.WR.get(rankings_url)
+            if (rankings is None) or ("submissions" not in rankings) or ("total_rank" not in rankings)  or (len(rankings["submissions"]) == 0) or (len(rankings["total_rank"]) == 0):
+                fail(f"No rankings found for url: [{rankings_url}]")
+            
+            submissions = rankings["submissions"]
+            ranks = rankings["total_rank"]
+            questions = {str(question["question_id"]): question["title"] for question in rankings["questions"]}
+
+            if page_num_total == float('inf'):
+                page_num_total = ceil(rankings["user_num"]/Leetcode.RANKINGS_PER_PAGE)
+
+            for i, rank in enumerate(ranks):
+                user_name = rank["username"]
+                solved_questions = [str(question_id) + " -- " + questions[str(question_id)] for question_id, submission in submissions[i].items()]
+                LOG.debug(f"user: [{user_name}] solved these questions: [{solved_questions}]")
+                cache_dict[user_name] = solved_questions
+
+                # Short circuit if user had 0 submissions, as that is simply 0 points
+                if len(submissions[i]) == 0:
+                    LOG.debug(f"Short circuiting at page_num: [{page_num}] with url: [{rankings_url}] from user: [{user_name}] because 0 submissions have started.")
+                    short_circuit = True
+                    break
+
+            page_num += 1
+
+
+        # To prevent any failures mid-way from leaving behind a partially formed cache
+        Leetcode.POINTS_CACHE = cache_dict
+        LOG.info(f"Cached points data for contest: [{ct.contest_id}]")
+
+
+        return self.__get_points(usr, ct)
 
         

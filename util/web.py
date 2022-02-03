@@ -47,6 +47,6 @@ class WebRequest:
         self.__rate_limit()
         if data is not None:
             if headers is not None:
-                return r.post(url, data=data, headers=headers)
-            return r.post(url, data=data)
-        return r.post(url)
+                return r.post(url, data=data, headers=headers).json()
+            return r.post(url, data=data).json()
+        return r.post(url).json()

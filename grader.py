@@ -16,7 +16,7 @@ LOG = get_logger("Grader")
 
 # Main constants
 # NOTE: Can't move to constants.py cuz circular dependency
-PLATFORMS = [Dmoj()]
+PLATFORMS = [Leetcode()]
 
 # Testing this for now
 def main():
@@ -25,7 +25,7 @@ def main():
 
     PLATFORM_CONTESTS = {platform: platform.all_contests(gd) for platform in PLATFORMS}
     
-    usr = User("eggag32") # User("yin929")
+    usr = User("yincheng929") # User("yin929")
     point_map = defaultdict(int)
     for platform, contests in PLATFORM_CONTESTS.items():
         for ct in contests:

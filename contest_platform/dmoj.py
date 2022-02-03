@@ -26,7 +26,7 @@ class Dmoj(PlatformBase):
     SUBMISSIONS_URL = "https://dmoj.ca/api/v2/contest/{contest_id}"
     
     WR = WebRequest(rate_limit_millis=1000)
-    DMOJ_POINTS_CACHE = None
+    POINTS_CACHE = dict()
 
 
     def name(self):
@@ -91,17 +91,18 @@ class Dmoj(PlatformBase):
 
 
     def __get_points(self, usr: User, ct: Contest) -> int:
-        if usr.user_id not in Dmoj.DMOJ_POINTS_CACHE:
-            fail(f"user: [{usr.user_id}] not found in contest cache for dmoj.")
+        if usr.user_id not in Dmoj.DMOJ_POINTS_CACHE[ct.contest_id]:
+            LOG.info(f"user: [{usr.user_id}] not found in points cache for contest: [{ct.contest_id}]")
+            return 0
 
-        val = Dmoj.DMOJ_POINTS_CACHE[usr.user_id]
+        val = Dmoj.DMOJ_POINTS_CACHE[ct.contest_id][usr.user_id]
         if val["is_disqualified"]:
             LOG.warn(f"user: [{usr.user_id}] is disqualified in [{ct.contest_id}], returning 0 points")
             return 0
 
-        LOG.debug(f"user: [{usr.user_id}] solved these questions: [{val['solved_questions']}]")
+        LOG.debug(f"user: [{usr.user_id}] in contest: [{ct.contest_id}] solved these questions: [{val['solved_questions']}]")
         if len(val["partially_solved_questions"]) > 0:
-            LOG.warn(f"user: [{usr.user_id}] has a partially solved questions: [{val['partially_solved_questions']}], ignoring it for now.")
+            LOG.warn(f"user: [{usr.user_id}] in contest: [{ct.contest_id}] has a partially solved questions: [{val['partially_solved_questions']}], ignoring it for now.")
         return len(val['solved_questions'])
         
 
@@ -183,7 +184,7 @@ class Dmoj(PlatformBase):
         """
 
         # Returned cached values if present
-        if Dmoj.DMOJ_POINTS_CACHE is not None:
+        if ct.contest_id in Dmoj.POINTS_CACHE:
             return self.__get_points(usr, ct)
 
         # Process and cache results
@@ -218,7 +219,8 @@ class Dmoj(PlatformBase):
             cache_dict[user_name] = {"solved_questions": solved_questions, "partially_solved_questions": partially_solved_questions, "is_disqualified": disq}
 
         # To prevent any failures mid-way from leaving behind a partially formed cache
-        Dmoj.DMOJ_POINTS_CACHE = cache_dict
+        Dmoj.POINTS_CACHE[ct.contest_id] = cache_dict
+        LOG.info(f"Cached points data for contest: [{ct.contest_id}]")
 
         return self.__get_points(usr, ct)
 
