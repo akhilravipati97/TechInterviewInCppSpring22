@@ -1,21 +1,24 @@
+from collections import defaultdict
 from distutils.log import debug
 from re import sub
+from typing import Dict, List, Set
 from webbrowser import get
 from constants import UTC_TZINFO
 from util.datetime import to_dt_from_ts
 from datetime import datetime
 from model.user import User
 from model.grading import Grading
+from model.contest import Contest
 from practice_platform.base import PracticePlatformBase
 from util.web import WebRequest
 from util.common import fail
 from util.log import get_logger
 from util.datetime import in_between_dt
 
-LOG = get_logger("Spoj")
+LOG = get_logger("SpojPractice")
 
 
-class Spoj(PracticePlatformBase):
+class SpojPractice(PracticePlatformBase):
     """
     Spoj doesn't seem to have an API, documented or otherwise. We'll have to scrape.
     """
@@ -30,10 +33,10 @@ class Spoj(PracticePlatformBase):
     WR = WebRequest(rate_limit_millis=1000)
 
     def name(self) -> str:
-        return Spoj.PLATFORM
+        return SpojPractice.PLATFORM
 
 
-    def successfull_submissions(self, gd: Grading, usr: User) -> int:
+    def successfull_submissions(self, gd: Grading, usr: User, usr_cts_sq: Dict[str, Set[str]] = defaultdict(set)) -> int:
         """
         We use the submissions url to fetch as many submissions as there are within a time frame.
         """
@@ -42,14 +45,14 @@ class Spoj(PracticePlatformBase):
         submission_count = 0
         solved_questions = set()
         while not short_circuit:
-            submissions_url = Spoj.SUBMISSIONS_URL.format(user_id=usr.user_id, submission_count=submission_count)
+            submissions_url = SpojPractice.SUBMISSIONS_URL.format(user_id=usr.user_id, submission_count=submission_count)
             LOG.debug(f"Submissions url: [{submissions_url}]")
         
-            driver = Spoj.WR.scrape(submissions_url)
+            driver = SpojPractice.WR.scrape(submissions_url)
             tr_vals = driver.find_elements_by_css_selector("table > tbody > tr")
             LOG.debug(f"len tr_vals: [{len(tr_vals)}]")
-            if len(tr_vals) > Spoj.SUBMISSIONS_PER_PAGE_LIMIT:
-                LOG.warn(f"more tr_vals found: [{len(tr_vals)}] than expected: [{Spoj.SUBMISSIONS_PER_PAGE_LIMIT}]")
+            if len(tr_vals) > SpojPractice.SUBMISSIONS_PER_PAGE_LIMIT:
+                LOG.warn(f"more tr_vals found: [{len(tr_vals)}] than expected: [{SpojPractice.SUBMISSIONS_PER_PAGE_LIMIT}]")
             if len(tr_vals) == 0:
                 break
 
@@ -68,7 +71,7 @@ class Spoj(PracticePlatformBase):
                     short_circuit = True
                     break
                     
-            submission_count += Spoj.SUBMISSIONS_PER_PAGE_LIMIT
+            submission_count += SpojPractice.SUBMISSIONS_PER_PAGE_LIMIT
         
         LOG.debug(f"User: [{usr.user_id}] has solved: [{len(solved_questions)}] questions: [{solved_questions}]")
         return len(solved_questions)

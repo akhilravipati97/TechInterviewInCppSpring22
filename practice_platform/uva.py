@@ -1,9 +1,12 @@
+from collections import defaultdict
 from distutils.log import debug
 from re import sub
+from typing import Dict, List, Set
 from webbrowser import get
 from util.datetime import to_dt_from_ts
 from model.user import User
 from model.grading import Grading
+from model.contest import Contest
 from practice_platform.base import PracticePlatformBase
 from util.web import WebRequest
 from util.common import fail
@@ -13,14 +16,14 @@ from util.datetime import in_between_dt
 LOG = get_logger("Uva")
 
 
-class Uva(PracticePlatformBase):
+class UvaPractice(PracticePlatformBase):
     """
     Uva has a well documented API, which is what we'll be using.
 
     Source: https://uhunt.onlinejudge.org/api
     """
 
-    PLATFORM = "Uva"
+    PLATFORM = "UvaPractice"
 
     USERID_TO_UID_URL = "https://uhunt.onlinejudge.org/api/uname2uid/{user_id}"
 
@@ -31,25 +34,25 @@ class Uva(PracticePlatformBase):
     WR = WebRequest(rate_limit_millis=1000)
 
     def name(self) -> str:
-        return Uva.PLATFORM
+        return UvaPractice.PLATFORM
 
     
     def __get_uid(self, usr: User) -> str:
-        uid_url = Uva.USERID_TO_UID_URL.format(user_id=usr.user_id)
+        uid_url = UvaPractice.USERID_TO_UID_URL.format(user_id=usr.user_id)
         LOG.debug(f"Fecthing uid for user: [{usr.user_id}] at: [{uid_url}]")
 
-        return str(Uva.WR.get(uid_url, is_json=True))
+        return str(UvaPractice.WR.get(uid_url, is_json=True))
 
 
-    def successfull_submissions(self, gd: Grading, usr: User) -> int:
+    def successfull_submissions(self, gd: Grading, usr: User, usr_cts_sq: Dict[str, Set[str]] = defaultdict(set)) -> int:
         """
         Uva API works with numeric uid. For that, Uva user id has to be converted to uid.
         """
         uid = self.__get_uid(usr)
-        submissions_url = Uva.SUBMISSIONS_URL.format(uid=uid)
+        submissions_url = UvaPractice.SUBMISSIONS_URL.format(uid=uid)
         LOG.debug(f"Submissions url: [{submissions_url}]")
         
-        submissions = Uva.WR.get(submissions_url)
+        submissions = UvaPractice.WR.get(submissions_url)
         if (submissions is None) or ("subs" not in submissions) or (len(submissions["subs"]) == 0):
             fail(f"No submissions found for user: [{usr.user_id}] at [{uid}]")
 
