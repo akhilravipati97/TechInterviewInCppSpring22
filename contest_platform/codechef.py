@@ -34,7 +34,7 @@ class Codechef(ContestPlatformBase):
     # https://www.codechef.com/api/contests/COOK127?v=1643691157039
     # https://www.codechef.com/api/rankings/START22A?sortBy=rank&order=asc&search=jo3kerr&page=1&itemsPerPage=25
     SUBMISSIONS_URL = "https://www.codechef.com/rankings/{child_contest_id}?order=asc&search={user_id}&sortBy=rank"
-    WR = WebRequest(rate_limit_millis=1000)
+    WR = WebRequest(rate_limit_millis=2000)
 
 
     def name(self):
@@ -154,7 +154,7 @@ class Codechef(ContestPlatformBase):
             fail(f"Unexpected count: [{len(tr_vals)}] of ranking found for: [{submissions_url}]")
         if len(tr_vals) == 0:
             LOG.debug(f"No submissions found for user: [{usr.user_id}] in contest: [{ct.contest_id}]")
-            return 0
+            return Submission()
         td_vals = tr_vals[0].find_elements_by_css_selector("td")
         LOG.debug(f"Num div found: {len(td_vals)}")
         td_vals = td_vals[4:] # The 5th onwards are the actual problems
@@ -167,7 +167,6 @@ class Codechef(ContestPlatformBase):
         problem_names = [th_val.find_element_by_css_selector("a > div:nth-child(2)").text.strip() for th_val in th_vals]
         LOG.debug(f"problem names: {problem_names}")
 
-
         solved_questions = set()
         for i, val in enumerate(td_vals):
             LOG.debug(f"[MAJOR*****] val: {val.text}")
@@ -175,6 +174,9 @@ class Codechef(ContestPlatformBase):
             if len(has_answered) > 0:
                 LOG.debug(f"[MAJOR NEXT*****] len: {len(has_answered)}, first val: {has_answered[0].text}")
                 solved_questions.add(problem_names[i])
+
+        if driver is not None:
+            driver.quit()
 
         LOG.debug(f"User [{usr.user_id}] in contest [{ct.contest_id}] solved these questions: [{solved_questions}]")
         return Submission(solved_questions)

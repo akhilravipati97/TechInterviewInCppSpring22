@@ -32,7 +32,7 @@ class Leetcode(ContestPlatformBase):
     RANKINGS_URL = "https://leetcode.com/contest/api/ranking/{contest_id}/?pagination={page_num}&region=global"
     RANKINGS_URL_HEADERS = {"Content-type": "application/json"}
     RANKINGS_PER_PAGE = 25
-    WR = WebRequest(rate_limit_millis=1000)
+    WR = WebRequest(rate_limit_millis=2000)
 
     POINTS_CACHE = dict()
 
@@ -89,7 +89,7 @@ class Leetcode(ContestPlatformBase):
     def __get_points(self, usr: User, ct: Contest) -> Submission:
         if usr.user_id not in Leetcode.LEETCODE_POINTS_CACHE[ct.contest_id]:
             LOG.info(f"user: [{usr.user_id}] not found in points cache for contest: [{ct.contest_id}].")
-            return 0
+            return Submission()
         
         val = Leetcode.LEETCODE_POINTS_CACHE[ct.contest_id][usr.user_id]
         LOG.debug(f"user: [{usr.user_id}] in contest: [{ct.contest_id}] solved these questions: [{val}]")
@@ -119,14 +119,14 @@ class Leetcode(ContestPlatformBase):
         """
 
         if ct.contest_id in Leetcode.POINTS_CACHE:
-            self.__get_points(usr, ct)
+            return self.__get_points(usr, ct)
 
         
         page_num_total = float('inf')
         page_num = 1
         cache_dict = dict()
         short_circuit = False
-        while short_circuit or (page_num <= page_num_total):     
+        while (not short_circuit) and (page_num <= page_num_total):     
             rankings_url = Leetcode.RANKINGS_URL.format(contest_id=ct.contest_id, page_num=page_num)
             LOG.debug(f"Rankings url is: [{rankings_url}]")
 
