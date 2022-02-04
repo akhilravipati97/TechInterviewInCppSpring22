@@ -2,3 +2,4 @@ colorlog==6.6.0
 requests
 pytz
 selenium
+beautifulsoup4

@@ -51,6 +51,7 @@ class SpojPractice(PracticePlatformBase):
             driver = SpojPractice.WR.scrape(submissions_url)
             tr_vals = driver.find_elements_by_css_selector("table > tbody > tr")
             LOG.debug(f"len tr_vals: [{len(tr_vals)}]")
+
             if len(tr_vals) > SpojPractice.SUBMISSIONS_PER_PAGE_LIMIT:
                 LOG.warn(f"more tr_vals found: [{len(tr_vals)}] than expected: [{SpojPractice.SUBMISSIONS_PER_PAGE_LIMIT}]")
             if len(tr_vals) == 0:
@@ -70,7 +71,10 @@ class SpojPractice(PracticePlatformBase):
                     LOG.debug(f"Breaking because {curr_dt} is older that {gd.week_start_dt}")
                     short_circuit = True
                     break
-                    
+
+            if driver is not None:
+                driver.quit()
+
             submission_count += SpojPractice.SUBMISSIONS_PER_PAGE_LIMIT
         
         LOG.debug(f"User: [{usr.user_id}] has solved: [{len(solved_questions)}] questions: [{solved_questions}]")
