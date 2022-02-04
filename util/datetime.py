@@ -56,4 +56,8 @@ def in_between_ts(target_dt: datetime, start_epoch_ms: int, end_epoch_ms: int) -
     start_dt = datetime.fromtimestamp(start_epoch_ms/1000.0, tz=EST_TZINFO)
     end_dt = datetime.fromtimestamp(start_epoch_ms/1000.0, tz=EST_TZINFO)
     return in_between_dt(target_dt, start_dt, end_dt)
+
+
+def get_curr_dt_est() -> datetime:
+    return datetime.now(EST_TZINFO)
     
