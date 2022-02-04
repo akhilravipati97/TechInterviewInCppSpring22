@@ -1,4 +1,5 @@
 from typing import List
+from model.submission import Submission
 from util.web import WebRequest
 from util.log import get_logger
 from contest_platform.base import ContestPlatformBase, Grading, User, Contest
@@ -60,15 +61,24 @@ class Atcoder(ContestPlatformBase):
         contests = [{**contest, "startDatetime": to_dt_from_ts(int(contest["start_epoch_second"])*1000)} for contest in contests]
         contests = [contest for contest in contests if in_between_dt(contest["startDatetime"], gd.week_start_dt, gd.week_end_dt)]
         LOG.debug(f"Contests: {contests}")
-        return [Contest(str(contest["id"])) for contest in contests]
+        ret_contests = []
+        for contest in contests:
+            contest_id = contest["id"]
+            contest_start_dt = contest["startDatetime"]
+            contest_end_dt = contest_start_dt + timedelta(seconds=int(contest["duration_second"]))
+            ret_contests.append(Contest(contest_id, contest_start_dt, contest_end_dt)) # Need date info for filtering submissions
+        return ret_contests
         
 
-    def successful_submissions(self, gd: Grading, ct: Contest, usr: User) -> int:
+    def successful_submissions(self, gd: Grading, ct: Contest, usr: User) -> Submission:
         """
             The API returns all submission by a user after a certain timestamp. We'll have to filter
             it separately by ourselves. 
             
             NOTE: We can also cache results internally to prevent repeated calls.
+
+            NOTE: Atcode submissions can be made for a contest after a contest has ended too. So REMEMBER
+            to apply both grading week time filter and contest duration filter to the submissions.
 
             Sample json:
             [
@@ -100,8 +110,9 @@ class Atcoder(ContestPlatformBase):
 
         solved_questions = set()
         for submission in submissions:
-                if submission["result"] == "AC" and submission["contest_id"] == ct.contest_id:
-                    solved_questions.add(submission["problem_id"])
+            curr_dt = to_dt_from_ts(int(submission["epoch_second"])*1000)
+            if submission["result"] == "AC" and submission["contest_id"] == ct.contest_id and in_between_dt(curr_dt, gd.week_start_dt, gd.week_end_dt) and in_between_dt(curr_dt, ct.contest_start_dt, ct.contest_end_dt):
+                solved_questions.add(submission["problem_id"])
 
         LOG.debug(f"User [{usr.user_id}] in contest [{ct.contest_id}] solved these questions: [{solved_questions}]")
-        return len(solved_questions)
+        return Submission(solved_questions)

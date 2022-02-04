@@ -1,4 +1,5 @@
 from typing import List
+from model.submission import Submission
 from util.web import WebRequest
 from util.log import get_logger
 from contest_platform.base import ContestPlatformBase, Grading, User, Contest
@@ -90,7 +91,7 @@ class Dmoj(ContestPlatformBase):
         return [Contest(str(contest['key'])) for contest in curr_contests]
 
 
-    def __get_points(self, usr: User, ct: Contest) -> int:
+    def __get_points(self, usr: User, ct: Contest) -> Submission:
         if usr.user_id not in Dmoj.POINTS_CACHE[ct.contest_id]:
             LOG.info(f"user: [{usr.user_id}] not found in points cache for contest: [{ct.contest_id}]")
             return 0
@@ -103,10 +104,10 @@ class Dmoj(ContestPlatformBase):
         LOG.debug(f"user: [{usr.user_id}] in contest: [{ct.contest_id}] solved these questions: [{val['solved_questions']}]")
         if len(val["partially_solved_questions"]) > 0:
             LOG.warn(f"user: [{usr.user_id}] in contest: [{ct.contest_id}] has a partially solved questions: [{val['partially_solved_questions']}], ignoring it for now.")
-        return len(val['solved_questions'])
+        return Submission(set(val['solved_questions']))
         
 
-    def successful_submissions(self, gd: Grading, ct: Contest, usr: User) -> int:
+    def successful_submissions(self, gd: Grading, ct: Contest, usr: User) -> Submission:
         """
             Dmoj contest url gives out every bit of information for that contest including rankings and submissions.
             So, we can directly hit that endpoint and perform all calculations

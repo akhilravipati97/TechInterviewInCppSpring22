@@ -1,4 +1,6 @@
 from typing import List
+from util.web import WebRequest
+from model.submission import Submission
 from util.log import get_logger
 from contest_platform.base import ContestPlatformBase, Grading, User, Contest
 from datetime import datetime
@@ -12,6 +14,7 @@ class Codeforces(ContestPlatformBase):
     PLATFORM = "Codeforces"
     CONTESTS_URL = "https://codeforces.com/api/contest.list"
     SUBMISSIONS_URL = "https://codeforces.com/api/contest.status?contestId={contest_id}&handle={user_id}"
+    WR = WebRequest(rate_limit_millis=1000)
 
 
     def name(self):
@@ -40,7 +43,7 @@ class Codeforces(ContestPlatformBase):
                 ...
         """
 
-        contests = r.get(Codeforces.CONTESTS_URL).json()
+        contests = Codeforces.WR.get(Codeforces.CONTESTS_URL)
         if (contests is None) or ("result" not in contests):
             fail(f"No contests found")
 
@@ -51,7 +54,7 @@ class Codeforces(ContestPlatformBase):
         return [Contest(str(contest["id"])) for contest in contests]
         
 
-    def successful_submissions(self, gd: Grading, ct: Contest, usr: User) -> int:
+    def successful_submissions(self, gd: Grading, ct: Contest, usr: User) -> Submission:
         """
             Sample json:
             {
@@ -98,8 +101,8 @@ class Codeforces(ContestPlatformBase):
         submissions_url = Codeforces.SUBMISSIONS_URL.format(contest_id=ct.contest_id, user_id=usr.user_id)
         LOG.debug(f"Submission url: {submissions_url}")
 
-        submissions = r.get(submissions_url).json()
-        LOG.debug(f"Submissions request response: {submissions}")
+        submissions = Codeforces.WR.get(submissions_url)
+        #LOG.debug(f"Submissions request response: {submissions}")
 
         if submissions["status"] != "OK":
             LOG.error(f"Unsuccessful submissions request. response: {submissions}")
@@ -111,4 +114,4 @@ class Codeforces(ContestPlatformBase):
                 solved_questions.add(submission["problem"]["name"] + " -- " + submission["problem"]["index"] )
 
         LOG.debug(f"User [{usr.user_id}] in contest [{ct.contest_id}] solved these questions: [{solved_questions}]")
-        return len(solved_questions)
+        return Submission(solved_questions)

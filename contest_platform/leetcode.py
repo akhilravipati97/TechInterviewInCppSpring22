@@ -1,4 +1,5 @@
 from typing import List
+from model.submission import Submission
 from util.web import WebRequest
 from util.log import get_logger
 from contest_platform.base import ContestPlatformBase, Grading, User, Contest
@@ -85,17 +86,17 @@ class Leetcode(ContestPlatformBase):
         return [Contest(str(contest["titleSlug"])) for contest in curr_contests]
 
     
-    def __get_points(self, usr: User, ct: Contest) -> int:
+    def __get_points(self, usr: User, ct: Contest) -> Submission:
         if usr.user_id not in Leetcode.LEETCODE_POINTS_CACHE[ct.contest_id]:
             LOG.info(f"user: [{usr.user_id}] not found in points cache for contest: [{ct.contest_id}].")
             return 0
         
         val = Leetcode.LEETCODE_POINTS_CACHE[ct.contest_id][usr.user_id]
         LOG.debug(f"user: [{usr.user_id}] in contest: [{ct.contest_id}] solved these questions: [{val}]")
-        return len(val)
+        return Submission(set(val))
         
 
-    def successful_submissions(self, gd: Grading, ct: Contest, usr: User) -> int:
+    def successful_submissions(self, gd: Grading, ct: Contest, usr: User) -> Submission:
         """
             This bit it odd. Leetcode rankings do not allow you to search based on user_id,
             so there is no clear API (documented or otherwise).

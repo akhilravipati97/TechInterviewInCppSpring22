@@ -1,4 +1,5 @@
 from typing import List
+from model.submission import Submission
 from util.web import WebRequest
 from util.log import get_logger
 from contest_platform.base import ContestPlatformBase, Grading, User, Contest
@@ -130,7 +131,7 @@ class Codechef(ContestPlatformBase):
         return [Contest(str(contest["child_contest_code"])) for contest in contests]
         
 
-    def successful_submissions(self, gd: Grading, ct: Contest, usr: User) -> int:
+    def successful_submissions(self, gd: Grading, ct: Contest, usr: User) -> Submission:
         """
             This bit it odd. Despite the clear and simple undocumented API, this api needs
             something more to work in isolation. It returns an error despite setting cookies and csrfTokens correctly.
@@ -176,4 +177,4 @@ class Codechef(ContestPlatformBase):
                 solved_questions.add(problem_names[i])
 
         LOG.debug(f"User [{usr.user_id}] in contest [{ct.contest_id}] solved these questions: [{solved_questions}]")
-        return len(solved_questions)
+        return Submission(solved_questions)
