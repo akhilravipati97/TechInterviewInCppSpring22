@@ -16,6 +16,8 @@ TIC_WEEK_START_DATES = [TIC_WEEK_1_START_DATE + timedelta(days=7*i) for i in ran
 LOG_MODE_DEBUG = True
 PROJECT_PATH = Path(".").resolve()
 CHROME_DRIVER_PATH = Path("./chromedriver.exe").resolve() # Please add chrome driver path here - https://chromedriver.chromium.org/downloads
+PRACTICE_PROBLEM_MULTIPLIER=0.01
+CONTEST_PROBLEM_MULTIPLIER=1
 
 # Safety checks
 assert((CHROME_DRIVER_PATH is not None) and type(CHROME_DRIVER_PATH) == type(Path(".")) and CHROME_DRIVER_PATH.exists())
