@@ -9,6 +9,9 @@ class ContestPlatformBase:
     def name() -> str:
         raise Exception("Unimplemented name")
 
+    def pre_process(self, gd: Grading) -> None:
+        raise Exception("Unimplemented pre_process")
+
     def all_contests(self, gd: Grading) -> List[Contest]:
         raise Exception("Unimplemented get_contests")
 

@@ -194,7 +194,7 @@ class Dmoj(ContestPlatformBase):
 
         contest_data = Dmoj.WR.get(submissions_url)
         if (contest_data is None) or ("data" not in contest_data) or ("object" not in contest_data["data"]) or ("problems" not in contest_data["data"]["object"]) or ("rankings" not in contest_data["data"]["object"]):
-            fail(f"No submission data found for: [{ct.contest_id}] at: {[submissions_url]}")
+            fail(f"No submission data found for: [{ct.contest_id}] at: {[submissions_url]}", LOG)
 
         problems = contest_data["data"]["object"]["problems"]
         rankings = contest_data["data"]["object"]["rankings"]

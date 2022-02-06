@@ -45,7 +45,7 @@ class Codeforces(ContestPlatformBase):
 
         contests = Codeforces.WR.get(Codeforces.CONTESTS_URL)
         if (contests is None) or ("result" not in contests):
-            fail(f"No contests found")
+            fail(f"No contests found", LOG)
 
         contests = contests["result"]
         contests = [{**contest, "startDatetime": to_dt_from_ts(int(contest["startTimeSeconds"])*1000)} for contest in contests]
@@ -106,7 +106,7 @@ class Codeforces(ContestPlatformBase):
 
         if submissions["status"] != "OK":
             LOG.error(f"Unsuccessful submissions request. response: {submissions}")
-            fail(f"Submissions not found for [{usr.user_id}] in [{ct.contest_id}].")
+            fail(f"Submissions not found for [{usr.user_id}] in [{ct.contest_id}].", LOG)
 
         solved_questions = set()
         for submission in submissions["result"]:

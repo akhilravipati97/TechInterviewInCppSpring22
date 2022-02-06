@@ -50,7 +50,7 @@ class CodechefPractice(ContestPlatformBase):
             elif "sec" in time_text:
                 return curr_dt + timedelta(seconds=val)
             else:
-                fail(f"Unexpected path for time parsing: [{time_text}]")
+                fail(f"Unexpected path for time parsing: [{time_text}]", LOG)
         else:
             curr_dt = datetime.strptime(time_text, "%I:%M %p %d/%m/%y")
             curr_dt.replace(tzinfo=IST_TZINFO)
@@ -64,14 +64,14 @@ class CodechefPractice(ContestPlatformBase):
         """
         parts = link_text.split("/")
         if "/problems/" not in link_text:
-            fail(f"Improper link to scrape: [{link_text}], expected: '/problems/HS08TEST' or '/START24C/problems/SPECIALSTR'")
+            fail(f"Improper link to scrape: [{link_text}], expected: '/problems/HS08TEST' or '/START24C/problems/SPECIALSTR'", LOG)
         
         if len(parts) == 3:
             return parts[-1], None
         elif len(parts) == 4:
             return parts[-1], parts[1]
         else:
-            fail(f"Unexpected parts: [{parts}] for link: [{link_text}], expected: '/problems/HS08TEST' or '/START24C/problems/SPECIALSTR'")
+            fail(f"Unexpected parts: [{parts}] for link: [{link_text}], expected: '/problems/HS08TEST' or '/START24C/problems/SPECIALSTR'", LOG)
         
 
     def successfull_submissions(self, gd: Grading, usr: User, usr_cts_sq: Dict[str, Set[str]] = defaultdict(set)) -> int:
@@ -95,7 +95,7 @@ class CodechefPractice(ContestPlatformBase):
 
             submission_data = CodechefPractice.WR.get(submissions_url)
             if (submission_data is None) or ("max_page" not in submission_data) or ("content" not in submission_data ):
-                fail(f"Submission data not found for: [{submissions_url}]")
+                fail(f"Submission data not found for: [{submissions_url}]", LOG)
 
             if max_page_num == float("inf"):
                 max_page_num = int(submission_data["max_page"])

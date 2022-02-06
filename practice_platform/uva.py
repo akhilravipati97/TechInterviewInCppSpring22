@@ -54,7 +54,7 @@ class UvaPractice(PracticePlatformBase):
         
         submissions = UvaPractice.WR.get(submissions_url)
         if (submissions is None) or ("subs" not in submissions) or (len(submissions["subs"]) == 0):
-            fail(f"No submissions found for user: [{usr.user_id}] at [{uid}]")
+            fail(f"No submissions found for user: [{usr.user_id}] at [{uid}]", LOG)
 
         # NOTE: We could take advantage of the ordering, but if we choose to pursue other alternative to 
         # reduce the number of submissions returned in the first place, we may not need this. So, for now,

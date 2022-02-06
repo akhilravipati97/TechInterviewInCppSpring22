@@ -117,7 +117,7 @@ class Codechef(ContestPlatformBase):
             child_contest_resp = Codechef.WR.get(child_contest_url)
 
             if (child_contest_resp is None) or (child_contest_resp["status"] != "success"):
-                fail(f"No child contests found for parent contest: {parent_contest_code}")
+                fail(f"No child contests found for parent contest: {parent_contest_code}", LOG)
 
             for child_contest_obj in child_contest_resp["child_contests"].values():
                 child_contest_code = child_contest_obj["contest_code"]
@@ -151,7 +151,7 @@ class Codechef(ContestPlatformBase):
         tr_vals = driver.find_elements_by_css_selector("table[class='dataTable'] > tbody > tr")
         LOG.debug(f"Num tr found: {len(tr_vals)}")
         if len(tr_vals) not in [0, 1]:
-            fail(f"Unexpected count: [{len(tr_vals)}] of ranking found for: [{submissions_url}]")
+            fail(f"Unexpected count: [{len(tr_vals)}] of ranking found for: [{submissions_url}]", LOG)
         if len(tr_vals) == 0:
             LOG.debug(f"No submissions found for user: [{usr.user_id}] in contest: [{ct.contest_id}]")
             return Submission()
