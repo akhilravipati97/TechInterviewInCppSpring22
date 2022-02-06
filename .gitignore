@@ -154,3 +154,4 @@ cython_debug/
 # Additional
 myvenv/*
 **/chromedriver.exe
+**/*.json
