@@ -25,21 +25,25 @@ def get_course_week(est_date: datetime) -> Tuple[datetime, datetime, int]:
         and the week number as a tuple of 3 elements.
     """
     if not is_est(est_date):
-        fail(f"Not an EST DATE: {est_date}")
+        fail(f"Not an EST DATE: {est_date}", LOG)
 
     if est_date > TIC_WEEK_START_DATES[-1] or est_date < TIC_WEEK_1_START_DATE:
-        fail(f"Date {est_date} not within the course duration: [{TIC_WEEK_1_START_DATE}, {TIC_WEEK_START_DATES[-1]}")
+        fail(f"Date {est_date} not within the course duration: [{TIC_WEEK_1_START_DATE}, {TIC_WEEK_START_DATES[-1]}", LOG)
 
     for i, dt in enumerate(TIC_WEEK_START_DATES):
         if est_date < dt:
             return [TIC_WEEK_START_DATES[i-1], TIC_WEEK_START_DATES[i] - timedelta(seconds=1), i]
 
 
+def get_course_week_by_num(week_num: int):
+    return [TIC_WEEK_START_DATES[week_num-1], TIC_WEEK_START_DATES[week_num] - timedelta(seconds=1), week_num]
+
+
 def to_dt_from_ts(epoch_millis: int) -> datetime:
     return datetime.fromtimestamp(epoch_millis/1000.0, tz=EST_TZINFO)
 
 def to_dt_from_fmt(date_str: str, fmt: str) -> datetime:
-    fail("Unimplemented to_dt_from_fmt")
+    fail("Unimplemented to_dt_from_fmt", LOG)
 
 
 def in_between_dt(target_dt: datetime, start_dt: datetime, end_dt: datetime) -> bool:

@@ -21,8 +21,8 @@ LOG = get_logger("Grader")
 
 # Main constants
 # NOTE: Can't move to constants.py cuz circular dependency
-CONTEST_PLATFORMS = [Codechef()]
-PRACTICE_PLATFORMS = [CodechefPractice()]
+CONTEST_PLATFORMS = [Atcoder()]
+PRACTICE_PLATFORMS = [AtcoderPractice()]
 
 # Testing this for now
 def main():
@@ -33,7 +33,7 @@ def main():
     PLATFORM_CONTESTS_MAP = {platform: platform.all_contests(gd) for platform in CONTEST_PLATFORMS}
     USER_CONTEST_SUBMISSIONS_MAP = defaultdict(dict)
     
-    usr = User("balaji17") #User("canhnam357") # User("yin929")
+    usr = User("sriharirt") #User("canhnam357") # User("yin929")
     point_map = defaultdict(int)
     for platform, contests in PLATFORM_CONTESTS_MAP.items():
         for ct in contests:
