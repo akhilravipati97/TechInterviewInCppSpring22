@@ -33,11 +33,11 @@ CONSOLE_HANDLER.setFormatter(STREAM_FORMATTER)
 
 FILE_HANDLER = None
 
-def __setup_file_handler():
+def __setup_file_handler(debug=False):
     global FILE_HANDLER
     if FILE_HANDLER is None:
         FILE_HANDLER = logging.FileHandler(os.path.join('logs', '{}_{}.log'.format(__name__, LOGGING_INIT_PACKAGE_TIMESTAMP)), mode='a')
-        FILE_HANDLER.setLevel(logging.INFO if not os.environ.get('DEBUG') else logging.DEBUG)
+        FILE_HANDLER.setLevel(logging.DEBUG if debug else logging.INFO)
         FILE_HANDLER.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(name)s %(message)s'))
 
 
@@ -46,7 +46,7 @@ def get_logger(name: str, debug = False) -> logging.Logger:
     logger = logging.getLogger(name)
 
     if PROJECT_PATH.joinpath("logs").exists():
-        __setup_file_handler()
+        __setup_file_handler(debug)
         logger.addHandler(FILE_HANDLER)
         
     logger.addHandler(CONSOLE_HANDLER)
