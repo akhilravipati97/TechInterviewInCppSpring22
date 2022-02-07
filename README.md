@@ -14,7 +14,10 @@
 
 
 ## Running the grader
+- Remember to activate the virtual env (see setup)
 - Run the preprocessor first: `python3 preprocessor.py -w <week_num>` 
     - This can take up to ~30min-1hr.
 - Run the grader next: `python3 grader.py -w <week_num>`
-    - It will store grades in `/path/to/cache/dir/grades_<week_num>.csv`.
+    - It will store grading events in `/path/to/cache/dir/grade_<week_num>.log`.
+- Run the calculator/assimilator next: `python3 calculate_points.py -w <week_num>`
+    - It will store the grades/points in `/path/to/cache/dir/grades_<week_num>.csv`
