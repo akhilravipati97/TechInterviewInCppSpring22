@@ -155,3 +155,4 @@ cython_debug/
 myvenv/*
 **/chromedriver.exe
 **/*.json
+**/*.csv
