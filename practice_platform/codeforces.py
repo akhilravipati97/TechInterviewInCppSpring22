@@ -71,17 +71,17 @@ class CodeforcesPractice(PracticePlatformBase):
                 },
                 ...
         """
-
+        usr_handle = usr.handle(self.name())
         short_circuit = False
         separately_solved_questions = defaultdict(set) # {contest => set(problem_id)]}
         curr_count = 1
         while not short_circuit:
-            submissions_url = CodeforcesPractice.SUBMISSIONS_URL.format(user_id=usr.user_id, from_count=curr_count, submission_count=CodeforcesPractice.SUBMISSIONS_COUNT)
+            submissions_url = CodeforcesPractice.SUBMISSIONS_URL.format(user_id=usr_handle, from_count=curr_count, submission_count=CodeforcesPractice.SUBMISSIONS_COUNT)
             LOG.debug(f"Submissions url: [{submissions_url}]")
             
             submissions = CodeforcesPractice.WR.get(submissions_url)
             if (submissions is None) or ("status" not in submissions) or (submissions["status"] != "OK"):
-                fail(f"No submissions found for user: [{usr.user_id}] at [{submissions_url}]", LOG)
+                fail(f"No submissions found for user: [{usr_handle}] at [{submissions_url}]", LOG)
 
             if (len(submissions["result"]) == 0):
                 short_circuit = True
@@ -113,11 +113,11 @@ class CodeforcesPractice(PracticePlatformBase):
         for contest_id, problems in separately_solved_questions.items():
             if contest_id in usr_cts_sq:
                 separate_problems = problems - usr_cts_sq[contest_id]
-                LOG.debug(f"User: [{usr.user_id}] already participared in contest: [{contest_id}]. Unsolved, i.e num practice problems are: [{len(separate_problems)}] which are: [{separate_problems}]")
+                LOG.debug(f"User: [{usr_handle}] already participared in contest: [{contest_id}]. Unsolved, i.e num practice problems are: [{len(separate_problems)}] which are: [{separate_problems}]")
                 REGULAR_POINTS[contest_id] = separate_problems
             else:
                 REGULAR_POINTS[contest_id] = problems
             
         num_practice_problems = sum([len(problems) for problems in REGULAR_POINTS.values()])
-        LOG.debug(f"User: [{usr.user_id}] has solved: [{num_practice_problems}] questions: [{REGULAR_POINTS}]")
+        LOG.debug(f"User: [{usr_handle}] has solved: [{num_practice_problems}] questions: [{REGULAR_POINTS}]")
         return num_practice_problems

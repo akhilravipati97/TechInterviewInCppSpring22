@@ -38,8 +38,9 @@ class UvaPractice(PracticePlatformBase):
 
     
     def __get_uid(self, usr: User) -> str:
-        uid_url = UvaPractice.USERID_TO_UID_URL.format(user_id=usr.user_id)
-        LOG.debug(f"Fecthing uid for user: [{usr.user_id}] at: [{uid_url}]")
+        usr_handle = usr.handle(self.name())
+        uid_url = UvaPractice.USERID_TO_UID_URL.format(user_id=usr_handle)
+        LOG.debug(f"Fecthing uid for user: [{usr_handle}] at: [{uid_url}]")
 
         return str(UvaPractice.WR.get(uid_url, is_json=True))
 
@@ -48,13 +49,14 @@ class UvaPractice(PracticePlatformBase):
         """
         Uva API works with numeric uid. For that, Uva user id has to be converted to uid.
         """
+        usr_handle = usr.handle(self.name())
         uid = self.__get_uid(usr)
         submissions_url = UvaPractice.SUBMISSIONS_URL.format(uid=uid)
         LOG.debug(f"Submissions url: [{submissions_url}]")
         
         submissions = UvaPractice.WR.get(submissions_url)
         if (submissions is None) or ("subs" not in submissions) or (len(submissions["subs"]) == 0):
-            fail(f"No submissions found for user: [{usr.user_id}] at [{uid}]", LOG)
+            fail(f"No submissions found for user: [{usr_handle}] at [{uid}]", LOG)
 
         # NOTE: We could take advantage of the ordering, but if we choose to pursue other alternative to 
         # reduce the number of submissions returned in the first place, we may not need this. So, for now,
@@ -69,5 +71,5 @@ class UvaPractice(PracticePlatformBase):
             if verdict == 90 and in_between_dt(submission_dt, gd.week_start_dt, gd.week_end_dt):
                 problem_ids.add(problem_id)
         
-        LOG.debug(f"User: [{usr.user_id}] has solved: [{len(problem_ids)}] questions: [{problem_ids}]")
+        LOG.debug(f"User: [{usr_handle}] has solved: [{len(problem_ids)}] questions: [{problem_ids}]")
         return len(problem_ids)

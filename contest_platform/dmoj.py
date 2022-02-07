@@ -92,18 +92,19 @@ class Dmoj(ContestPlatformBase):
 
 
     def __get_points(self, usr: User, ct: Contest) -> Submission:
-        if usr.user_id not in Dmoj.POINTS_CACHE[ct.contest_id]:
-            LOG.info(f"user: [{usr.user_id}] not found in points cache for contest: [{ct.contest_id}]")
+        usr_handle = usr.handle(self.name())
+        if usr_handle not in Dmoj.POINTS_CACHE[ct.contest_id]:
+            LOG.info(f"user: [{usr_handle}] not found in points cache for contest: [{ct.contest_id}]")
             return Submission()
 
-        val = Dmoj.POINTS_CACHE[ct.contest_id][usr.user_id]
+        val = Dmoj.POINTS_CACHE[ct.contest_id][usr_handle]
         if val["is_disqualified"]:
-            LOG.warn(f"user: [{usr.user_id}] is disqualified in [{ct.contest_id}], returning 0 points")
+            LOG.warn(f"user: [{usr_handle}] is disqualified in [{ct.contest_id}], returning 0 points")
             return Submission()
 
-        LOG.debug(f"user: [{usr.user_id}] in contest: [{ct.contest_id}] solved these questions: [{val['solved_questions']}]")
+        LOG.debug(f"user: [{usr_handle}] in contest: [{ct.contest_id}] solved these questions: [{val['solved_questions']}]")
         if len(val["partially_solved_questions"]) > 0:
-            LOG.warn(f"user: [{usr.user_id}] in contest: [{ct.contest_id}] has a partially solved questions: [{val['partially_solved_questions']}], ignoring it for now.")
+            LOG.warn(f"user: [{usr_handle}] in contest: [{ct.contest_id}] has a partially solved questions: [{val['partially_solved_questions']}], ignoring it for now.")
         return Submission(set(val['solved_questions']))
         
 

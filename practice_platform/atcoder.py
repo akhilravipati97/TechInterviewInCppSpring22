@@ -43,8 +43,9 @@ class AtcoderPractice(ContestPlatformBase):
             remove the contest time filter. i.e accept all submissions made to a contest within the grading week irrespective of
             when they were made. We'll remove those submissions that were made during the contest based on usr_cts_sq.
         """
+        usr_handle = usr.handle(self.name())
         from_ts_sec = int(gd.week_start_dt.timestamp())
-        submissions_url = AtcoderPractice.SUBMISSIONS_URL.format(user_id=usr.user_id, from_ts_sec=from_ts_sec)
+        submissions_url = AtcoderPractice.SUBMISSIONS_URL.format(user_id=usr_handle, from_ts_sec=from_ts_sec)
         LOG.debug(f"Submission url: {submissions_url}")
 
         submissions = AtcoderPractice.WR.get(submissions_url)
@@ -59,11 +60,11 @@ class AtcoderPractice(ContestPlatformBase):
         for contest_id, problems in all_contest_problems.items():
             if contest_id in usr_cts_sq:
                 separate_problems = problems - usr_cts_sq[contest_id]
-                LOG.debug(f"User: [{usr.user_id}] already participared in contest: [{contest_id}]. Unsolved, i.e num practice problems are: [{len(separate_problems)}] which are: [{separate_problems}]")
+                LOG.debug(f"User: [{usr_handle}] already participared in contest: [{contest_id}]. Unsolved, i.e num practice problems are: [{len(separate_problems)}] which are: [{separate_problems}]")
                 contest_practice_problems[contest_id] = separate_problems
             else:
                 contest_practice_problems[contest_id] = problems
             
         num_practice_problems = sum([len(problems) for problems in contest_practice_problems.values()])
-        LOG.debug(f"User: [{usr.user_id}] has solved: [{num_practice_problems}] questions: [{contest_practice_problems}]")
+        LOG.debug(f"User: [{usr_handle}] has solved: [{num_practice_problems}] questions: [{contest_practice_problems}]")
         return num_practice_problems

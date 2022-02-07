@@ -96,8 +96,9 @@ class Atcoder(ContestPlatformBase):
                 },
                 ...
         """
+        usr_handle = usr.handle(self.name())
         from_ts_sec = int(gd.week_start_dt.timestamp())
-        submissions_url = Atcoder.SUBMISSIONS_URL.format(user_id=usr.user_id, from_ts_sec=from_ts_sec)
+        submissions_url = Atcoder.SUBMISSIONS_URL.format(user_id=usr_handle, from_ts_sec=from_ts_sec)
         LOG.debug(f"Submission url: {submissions_url}")
 
         if submissions_url in Atcoder.SUBMISSION_DATA_CACHE:
@@ -114,5 +115,5 @@ class Atcoder(ContestPlatformBase):
             if submission["result"] == "AC" and submission["contest_id"] == ct.contest_id and in_between_dt(curr_dt, gd.week_start_dt, gd.week_end_dt) and in_between_dt(curr_dt, ct.contest_start_dt, ct.contest_end_dt):
                 solved_questions.add(submission["problem_id"])
 
-        LOG.debug(f"User [{usr.user_id}] in contest [{ct.contest_id}] solved these questions: [{solved_questions}]")
+        LOG.debug(f"User [{usr_handle}] in contest [{ct.contest_id}] solved these questions: [{solved_questions}]")
         return Submission(solved_questions)

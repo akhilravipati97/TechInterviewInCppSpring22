@@ -8,6 +8,7 @@ class User:
         self.name = name
         self.usr_id_map = usr_id_map
         self.user_id = uni
+        self.uni = uni
 
     
     def handle(self, platform_name: str) -> str:

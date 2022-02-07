@@ -83,14 +83,14 @@ class CodechefPractice(ContestPlatformBase):
             some problems belonging to a contest and some belonging to other problem lists. We'll need to exclude
             only those problems that are part of a contest that the user submitted successfully during the contest.
         """
-
+        usr_handle = usr.handle(self.name())
         short_circuit=False
         max_page_num = float('inf')
         curr_page_num = CodechefPractice.START_PAGE_NUM
         separate_practice_problems = set()
         contest_practice_problems = defaultdict(set)
         while (not short_circuit) and (curr_page_num <= max_page_num):
-            submissions_url = CodechefPractice.SUBMISSIONS_URL.format(page_num=curr_page_num, user_id=usr.user_id)
+            submissions_url = CodechefPractice.SUBMISSIONS_URL.format(page_num=curr_page_num, user_id=usr_handle)
             LOG.debug(f"Submission url: [{submissions_url}]")
 
             submission_data = CodechefPractice.WR.get(submissions_url)
@@ -132,15 +132,15 @@ class CodechefPractice(ContestPlatformBase):
         for contest_id, problems in contest_practice_problems.items():
             if contest_id in usr_cts_sq:
                 separate_problems = problems - usr_cts_sq[contest_id]
-                LOG.debug(f"User: [{usr.user_id}] already participared in contest: [{contest_id}]. Unsolved, i.e num practice problems are: [{len(separate_problems)}] which are: [{separate_problems}]")
+                LOG.debug(f"User: [{usr_handle}] already participared in contest: [{contest_id}]. Unsolved, i.e num practice problems are: [{len(separate_problems)}] which are: [{separate_problems}]")
                 real_practice_problems[contest_id] = separate_problems
             else:
                 real_practice_problems[contest_id] = problems
             
         num_real_practice_problems = sum([len(problems) for problems in real_practice_problems.values()])
         num_separate_practice_problems = len(separate_practice_problems)
-        LOG.debug(f"User: [{usr.user_id}] has solved real contest practice problems: [{num_real_practice_problems}] questions: [{real_practice_problems}]")
-        LOG.debug(f"User: [{usr.user_id}] has solved separate practice problems: [{num_separate_practice_problems}] questions: [{separate_practice_problems}]")
+        LOG.debug(f"User: [{usr_handle}] has solved real contest practice problems: [{num_real_practice_problems}] questions: [{real_practice_problems}]")
+        LOG.debug(f"User: [{usr_handle}] has solved separate practice problems: [{num_separate_practice_problems}] questions: [{separate_practice_problems}]")
         total =  num_real_practice_problems + num_separate_practice_problems
-        LOG.debug(f"User: [{usr.user_id}] has total: [{total}] problems as practice")
+        LOG.debug(f"User: [{usr_handle}] has total: [{total}] problems as practice")
         return total

@@ -140,8 +140,8 @@ class Codechef(ContestPlatformBase):
             
             Sample: https://www.codechef.com/rankings/COOK127A?order=asc&search=marckess&sortBy=rank
         """
-
-        submissions_url = Codechef.SUBMISSIONS_URL.format(child_contest_id=ct.contest_id , user_id=usr.user_id)
+        usr_handle = usr.handle(self.name())
+        submissions_url = Codechef.SUBMISSIONS_URL.format(child_contest_id=ct.contest_id , user_id=usr_handle)
         LOG.debug(f"Submission url: {submissions_url}")
 
 
@@ -153,7 +153,7 @@ class Codechef(ContestPlatformBase):
         if len(tr_vals) not in [0, 1]:
             fail(f"Unexpected count: [{len(tr_vals)}] of ranking found for: [{submissions_url}]", LOG)
         if len(tr_vals) == 0:
-            LOG.debug(f"No submissions found for user: [{usr.user_id}] in contest: [{ct.contest_id}]")
+            LOG.debug(f"No submissions found for user: [{usr_handle}] in contest: [{ct.contest_id}]")
             return Submission()
         td_vals = tr_vals[0].find_elements_by_css_selector("td")
         LOG.debug(f"Num div found: {len(td_vals)}")
@@ -178,5 +178,5 @@ class Codechef(ContestPlatformBase):
         if driver is not None:
             driver.quit()
 
-        LOG.debug(f"User [{usr.user_id}] in contest [{ct.contest_id}] solved these questions: [{solved_questions}]")
+        LOG.debug(f"User [{usr_handle}] in contest [{ct.contest_id}] solved these questions: [{solved_questions}]")
         return Submission(solved_questions)

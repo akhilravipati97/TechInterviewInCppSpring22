@@ -97,21 +97,25 @@ class Codeforces(ContestPlatformBase):
                     "memoryConsumedBytes": 36761600
                     },
         """
-
-        submissions_url = Codeforces.SUBMISSIONS_URL.format(contest_id=ct.contest_id, user_id=usr.user_id)
+        usr_handle = usr.handle(self.name())
+        submissions_url = Codeforces.SUBMISSIONS_URL.format(contest_id=ct.contest_id, user_id=usr_handle)
         LOG.debug(f"Submission url: {submissions_url}")
 
         submissions = Codeforces.WR.get(submissions_url)
         #LOG.debug(f"Submissions request response: {submissions}")
 
         if submissions["status"] != "OK":
-            LOG.error(f"Unsuccessful submissions request. response: {submissions}")
-            fail(f"Submissions not found for [{usr.user_id}] in [{ct.contest_id}].", LOG)
+            LOG.error(f"Unsuccessful submissions request for [{usr_handle}] in contest: [{ct.contest_id}]. response: {submissions}")
+            if submissions["status"] == "FAILED" and "not found" in submissions["comment"]:
+                LOG.error(f"Submissions not found for [{usr_handle}] in [{ct.contest_id}]. Returning 0 submissions.")
+                return Submission([])
+            else:
+                fail(f"Error for user: [{usr_handle}] in contest: [{ct.contest_id}].", LOG)
 
         solved_questions = set()
         for submission in submissions["result"]:
             if submission["verdict"] == "OK":
                 solved_questions.add(submission["problem"]["name"] + " -- " + submission["problem"]["index"] )
 
-        LOG.debug(f"User [{usr.user_id}] in contest [{ct.contest_id}] solved these questions: [{solved_questions}]")
+        LOG.debug(f"User [{usr_handle}] in contest [{ct.contest_id}] solved these questions: [{solved_questions}]")
         return Submission(solved_questions)

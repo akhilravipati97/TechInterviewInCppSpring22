@@ -40,7 +40,7 @@ class SpojPractice(PracticePlatformBase):
         """
         We use the submissions url to fetch as many submissions as there are within a time frame.
         """
-
+        usr_handle = usr.handle(self.name())
         short_circuit = False
         submission_count = 0
         solved_questions = set()

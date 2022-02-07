@@ -183,12 +183,13 @@ class Leetcode(ContestPlatformBase):
         
     
     def __get_points(self, usr: User, ct: Contest) -> Submission:
-        if usr.user_id not in Leetcode.LEETCODE_POINTS_CACHE[ct.contest_id]:
-            LOG.info(f"user: [{usr.user_id}] not found in points cache for contest: [{ct.contest_id}].")
+        usr_handle = usr.handle(self.name())
+        if usr_handle not in Leetcode.LEETCODE_POINTS_CACHE[ct.contest_id]:
+            LOG.info(f"user: [{usr_handle}] not found in points cache for contest: [{ct.contest_id}].")
             return Submission()
         
-        val = Leetcode.LEETCODE_POINTS_CACHE[ct.contest_id][usr.user_id]
-        LOG.debug(f"user: [{usr.user_id}] in contest: [{ct.contest_id}] solved these questions: [{val}]")
+        val = Leetcode.LEETCODE_POINTS_CACHE[ct.contest_id][usr_handle]
+        LOG.debug(f"user: [{usr_handle}] in contest: [{ct.contest_id}] solved these questions: [{val}]")
         return Submission(set(val))
         
 
