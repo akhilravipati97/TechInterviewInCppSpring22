@@ -55,10 +55,19 @@ class SpojPractice(PracticePlatformBase):
             if len(tr_vals) > SpojPractice.SUBMISSIONS_PER_PAGE_LIMIT:
                 LOG.warn(f"more tr_vals found: [{len(tr_vals)}] than expected: [{SpojPractice.SUBMISSIONS_PER_PAGE_LIMIT}]")
             if len(tr_vals) == 0:
+                short_circuit = True
                 break
 
-            for tr_val in tr_vals:
+            for i, tr_val in enumerate(tr_vals):
                 td_vals = tr_val.find_elements_by_css_selector("td")
+                LOG.debug(f"i={i}, num td_vals: {len(td_vals)}")
+
+                # For some reason Spoj sometimes returns a global site wide list of submissions
+                # when a wrong user id/user with no submission history is provided instead of returning an empty page
+                if len(td_vals) > 7:
+                    short_circuit = True
+                    break
+
                 # NOTE: It is one hour UTC apparently, but shouldn't be that bad an idea to just assume UTC for now
                 curr_dt = datetime.fromisoformat(td_vals[1].find_element_by_css_selector("span").text).replace(tzinfo=UTC_TZINFO)
                 problem_id = td_vals[2].find_element_by_css_selector("a").get_attribute("title")

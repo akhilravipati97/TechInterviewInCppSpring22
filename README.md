@@ -11,6 +11,7 @@
 - Download [chromedriver]( https://chromedriver.chromium.org/downloads) and set its path in `constants.py`
 - Create a cache directory for storing preprocessing results and grades. Set its path in `constant.py`
 - Copy `handles.csv` from the shared drive location and place it in the cache directory.
+- Create a `logs` directory in the project root if you wish the logger to auto spool to a log file along with console.
 
 
 ## Running the grader

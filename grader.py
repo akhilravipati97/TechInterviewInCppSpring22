@@ -95,6 +95,9 @@ def grade_practice(gd: Grading, usr: User, platform: PracticePlatformBase, conte
     practice_points = 0
     is_exception = True
     try:
+        if usr.handle(platform.name()) is None:
+            raise Exception(f"user: [{usr.user_id}] handle for [{platform.name()}] is None")
+
         LOG.debug(f"Obtained [{contest_solved_questions_map}] for platform: [{platform.name()}]")
         practice_points = (PRACTICE_PROBLEM_MULTIPLIER * platform.successfull_submissions(gd, usr, contest_solved_questions_map))
         is_exception = False
@@ -112,6 +115,8 @@ def grade_contest(gd: Grading, usr: User, platform: ContestPlatformBase, ct: Con
     contest_points = 0
     is_exception = True
     try:
+        if usr.handle(platform.name()) is None:
+            raise Exception(f"user: [{usr.user_id}] handle for [{platform.name()}] is None")
         contest_submission = platform.successful_submissions(gd, ct, usr)
         contest_solved_questions = contest_submission.solved_questions
         contest_points = (CONTEST_PROBLEM_MULTIPLIER * len(contest_solved_questions))
