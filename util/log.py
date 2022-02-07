@@ -38,7 +38,7 @@ def __setup_file_handler(debug=False):
     if FILE_HANDLER is None:
         FILE_HANDLER = logging.FileHandler(os.path.join('logs', '{}_{}.log'.format(__name__, LOGGING_INIT_PACKAGE_TIMESTAMP)), mode='a')
         FILE_HANDLER.setLevel(logging.DEBUG if debug else logging.INFO)
-        FILE_HANDLER.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(name)s %(message)s'))
+        FILE_HANDLER.setFormatter(logging.Formatter('[%(asctime)s][%(levelname)-6s][%(name)-10s] - %(message)s'))
 
 
 def get_logger(name: str, debug = False) -> logging.Logger:

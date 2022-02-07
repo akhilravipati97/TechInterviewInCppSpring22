@@ -58,17 +58,20 @@ def get_users() -> List[User]:
 
             # Handles
             not_handle_headers = set(["uni", "registered", "first_name", "middle_name", "last_name"])
+            not_handle_headers.add("Kattis") # ignore kattis for now
             handle_headers = [header for header in row.keys() if header not in not_handle_headers]
             usr_id_map = dict()
             for platform_name in handle_headers:
                 value = row.get(platform_name, None)
+                value =  value.strip() if value is not None else value
+
                 if value is None or value == "":
                     LOG.error(f"User: [{name}] with uni: [{uni}] has no id specified for platform: [{platform_name}]. Setting it to None for now. Needs fixing.")
                     value = None
                 elif " " in value:
                     LOG.error(f"User: [{name}] with uni: [{uni}] has an invalid id: [{value}] for platform: [{platform_name}]. Setting it to None for now. Needs fixing.")
                     value = None
-                usr_id_map[platform_name.strip()] = value.strip() if value is not None else value
+                usr_id_map[platform_name.strip()] = value
 
             users.append(User(name, uni, usr_id_map))
     return users

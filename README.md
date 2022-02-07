@@ -23,3 +23,9 @@
     - It will store grading events in `/path/to/cache/dir/grade_<week_num>.log`.
 - Run the calculator/assimilator next: `python3 calculate_points.py -w <week_num>`
     - It will store the grades/points in `/path/to/cache/dir/grades_<week_num>.csv`
+
+
+## Current Shortcomings
+- **Leetcode** Practice problem points cannot be calculated by auto-grader because Leetcode does not show all submissions made by a user.
+- **Topcoder** Contest and practice problems points are not auto-calculated yet. It was too complicated too code and I thought we should only put efforts if we see enough student submissions for Topcoder.
+- **Kattis** Practice problem points cannot be calculated by auto-grader because Kattis does not show submissions made by a user at all.

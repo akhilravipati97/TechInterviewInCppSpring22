@@ -81,7 +81,7 @@ class CodeforcesPractice(PracticePlatformBase):
             
             submissions = CodeforcesPractice.WR.get(submissions_url)
             if (submissions is None) or ("status" not in submissions) or (submissions["status"] != "OK"):
-                fail(f"No submissions found for user: [{usr_handle}] at [{submissions_url}]", LOG)
+                fail(f"No submissions found for user: [{usr.user_id}] at [{submissions_url}]", LOG)
 
             if (len(submissions["result"]) == 0):
                 short_circuit = True
