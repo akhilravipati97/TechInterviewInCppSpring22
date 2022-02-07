@@ -25,18 +25,19 @@ from util.log import get_logger
 import traceback
 from collections import defaultdict
 from csv import DictReader
+from pprint import pformat
 
 LOG = get_logger("Grader")
 
 # Main constants
 # NOTE: Can't move to constants.py cuz circular dependency
-CONTEST_PLATFORMS = [Codeforces(), Atcoder(), Codechef(), Dmoj(), Leetcode(), Topcoder()]
-PRACTICE_PLATFORMS = [CodeforcesPractice(), AtcoderPractice(), CodechefPractice(), SpojPractice(), UvaPractice(), TopcoderPractice()]
+CONTEST_PLATFORMS = [Codeforces(), Atcoder(), Codechef(), Dmoj(), Leetcode()]
+PRACTICE_PLATFORMS = [CodeforcesPractice(), AtcoderPractice(), CodechefPractice(), SpojPractice(), UvaPractice()]
 
 
 def get_users() -> List[User]:
     users = []
-    with open(CACHE_PATH.joinpath("handles.csv"), "r") as f:
+    with open(CACHE_PATH.joinpath("handles_temp.csv"), "r") as f:
         reader = DictReader(f)
         for row in reader:
             if row["registered"] != "Yes":
@@ -59,11 +60,12 @@ def get_users() -> List[User]:
             handle_headers = [header for header in row.keys() if header not in not_handle_headers]
             usr_id_map = dict()
             for platform_name in handle_headers:
-                value = handle_headers.get(platform_name, None)
-                if value is None or value is "":
+                value = row.get(platform_name, None)
+                if value is None or value == "":
                     LOG.error(f"User: [{name}] with uni: [{uni}] has no id specified for platform: [{platform_name}]. Setting it to None for now. Needs fixing.")
+                    value = None
                 elif " " in value:
-                    LOG.error(f"User: [{name}] with uni: [{uni}] has an invalid id: [{row[platform_name]}] for platform: [{platform_name}]. Setting it to None for now. Needs fixing.")
+                    LOG.error(f"User: [{name}] with uni: [{uni}] has an invalid id: [{value}] for platform: [{platform_name}]. Setting it to None for now. Needs fixing.")
                     value = None
                 usr_id_map[platform_name.strip()] = value.strip() if value is not None else value
 
@@ -71,7 +73,7 @@ def get_users() -> List[User]:
     return users
 
 
-EVENT_STR_TEMPLATE = r'{"curr_dt": {curr_dt}, "week_num": {week_num}, "uni": {uni}, "platform_name": {platform_name}, "is_exception": {is_exception}, "points": {points}, "event_type": {event_type}, "event_name": {event_name}}'
+EVENT_STR_TEMPLATE = r'"curr_dt": "{curr_dt}", "week_num": {week_num}, "uni": "{uni}", "platform_name": "{platform_name}", "is_exception": {is_exception}, "points": {points}, "event_type": "{event_type}", "event_name": "{event_name}"'
 def save_grade_event(grade_file_path: Path, gd: Grading, usr: User, platform, is_exception: bool, points: int, event_type: str, event_name: str) -> None:
     event_str = EVENT_STR_TEMPLATE.format(
         curr_dt=get_curr_dt_est().isoformat(),
@@ -84,7 +86,7 @@ def save_grade_event(grade_file_path: Path, gd: Grading, usr: User, platform, is
         event_name=event_name)
 
     with open(grade_file_path, "a") as f:
-        f.write(event_str + "\n")
+        f.write("{" + event_str + "}" + "\n")
 
 
 
@@ -135,6 +137,11 @@ def grade(week_num: int):
     gd = Grading(week_num=week_num) # grading timeline
     PLATFORM_CONTESTS_MAP = {platform: platform.all_contests(gd) for platform in CONTEST_PLATFORMS} # Map of each platform's contests during the grading week
     ALL_USERS = get_users()
+    
+    print_str = pformat({platform.name(): [ct.contest_id for ct in contests] for platform, contests in PLATFORM_CONTESTS_MAP.items()}, indent=2)
+    LOG.info(f"Platform contests map: [\n{print_str}\n]")
+    LOG.info(f"Num users: [{len(ALL_USERS)}]")
+    input("Ready?")
 
     # Create grade file if not present
     grade_file_name = f"grade_{gd.week_num}.log"
