@@ -10,7 +10,7 @@
 ## Initialize values
 - Download [chromedriver]( https://chromedriver.chromium.org/downloads) and set its path in `constants.py`
 - Create a cache directory for storing preprocessing results and grades. Set its path in `constant.py`
-- Obtain a local copy of the form 1 responses (with user handles) and place it in the cache directory.
+- Copy `handles.csv` from the shared drive location and place it in the cache directory.
 
 
 ## Running the grader
