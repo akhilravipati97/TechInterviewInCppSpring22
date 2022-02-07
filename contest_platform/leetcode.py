@@ -6,7 +6,7 @@ from contest_platform.base import ContestPlatformBase, Grading, User, Contest
 from datetime import datetime, timedelta
 import requests as r
 from util.datetime import in_between_dt, to_dt_from_ts
-from constants import EST_TZINFO
+from constants import EST_TZINFO, CACHE_PATH
 from util.common import fail
 from math import ceil
 import json
@@ -131,6 +131,13 @@ class Leetcode(ContestPlatformBase):
         all_contests = self.all_contests(gd)
         for ct in all_contests:
             LOG.info(f"Pre-processing contest: [{ct.contest_id}]")
+            cache_file_name = f"{Leetcode.PLATFORM}_{gd.week_num}_{ct.contest_id}.json"
+            cache_file_path = CACHE_PATH.joinpath(cache_file_name)
+
+            if cache_file_path.exists():
+                LOG.info(f"Cache exists for contest: [{ct.contest_id}] for week: [{gd.week_num}] at: [{cache_file_path}]. Skipping..")
+                continue
+
             page_num_total = float('inf')
             page_num = 1
             cache_dict = dict()
@@ -169,8 +176,8 @@ class Leetcode(ContestPlatformBase):
 
                 page_num += 1
             
-            cache_file_name = f"{Leetcode.PLATFORM}_{gd.week_num}_{ct.contest_id}.json"
-            with open(cache_file_name, "w") as f:
+            
+            with open(cache_file_path, "w") as f:
                 f.write(json.dumps(cache_dict))
                 LOG.info(f"Cached results for week: [{gd.week_num}] and contest: [{ct.contest_id}] at: [{cache_file_name}]")
         
@@ -204,9 +211,10 @@ class Leetcode(ContestPlatformBase):
 
         if ct.contest_id not in Leetcode.POINTS_CACHE:
             cache_file_name = f"{Leetcode.PLATFORM}_{gd.week_num}_{ct.contest_id}.json"
-            if not Path("./" + cache_file_name).exists():
+            cache_file_path = CACHE_PATH.joinpath(cache_file_name)
+            if not cache_file_path.exists():
                 fail(f"Pre-processed cache missing for contest: [{ct.contest_id}] for week: [{gd.week_num}]. Please perform pre-processing first for this platform", LOG)
-            with open(cache_file_name, "r") as f:
+            with open(cache_file_path, "r") as f:
                 Leetcode.POINTS_CACHE[ct.contest_id] = json.loads(f.read())
 
         return self.__get_points(usr, ct)

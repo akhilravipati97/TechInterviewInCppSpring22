@@ -18,6 +18,8 @@ PROJECT_PATH = Path(".").resolve()
 CHROME_DRIVER_PATH = Path("./chromedriver.exe").resolve() # Please add chrome driver path here - https://chromedriver.chromium.org/downloads
 PRACTICE_PROBLEM_MULTIPLIER=0.01
 CONTEST_PROBLEM_MULTIPLIER=1
+CACHE_PATH = Path("./cache").resolve() # Make sure this dir exists
 
 # Safety checks
-assert((CHROME_DRIVER_PATH is not None) and type(CHROME_DRIVER_PATH) == type(Path(".")) and CHROME_DRIVER_PATH.exists())
+assert((CHROME_DRIVER_PATH is not None) and type(CHROME_DRIVER_PATH) == type(Path(".")) and CHROME_DRIVER_PATH.exists() and CHROME_DRIVER_PATH.is_file())
+assert((CACHE_PATH is not None) and type(CACHE_PATH) == type(Path(".")) and CACHE_PATH.exists() and CACHE_PATH.is_dir())
