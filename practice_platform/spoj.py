@@ -45,7 +45,7 @@ class SpojPractice(PracticePlatformBase):
         submission_count = 0
         solved_questions = set()
         while not short_circuit:
-            submissions_url = SpojPractice.SUBMISSIONS_URL.format(user_id=usr.user_id, submission_count=submission_count)
+            submissions_url = SpojPractice.SUBMISSIONS_URL.format(user_id=usr_handle, submission_count=submission_count)
             LOG.debug(f"Submissions url: [{submissions_url}]")
         
             driver = SpojPractice.WR.scrape(submissions_url)
@@ -77,5 +77,5 @@ class SpojPractice(PracticePlatformBase):
 
             submission_count += SpojPractice.SUBMISSIONS_PER_PAGE_LIMIT
         
-        LOG.debug(f"User: [{usr.user_id}] has solved: [{len(solved_questions)}] questions: [{solved_questions}]")
+        LOG.debug(f"User: [{usr_handle}] has solved: [{len(solved_questions)}] questions: [{solved_questions}]")
         return len(solved_questions)

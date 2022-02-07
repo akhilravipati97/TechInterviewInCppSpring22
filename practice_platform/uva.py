@@ -23,7 +23,7 @@ class UvaPractice(PracticePlatformBase):
     Source: https://uhunt.onlinejudge.org/api
     """
 
-    PLATFORM = "UvaPractice"
+    PLATFORM = "Uva"
 
     USERID_TO_UID_URL = "https://uhunt.onlinejudge.org/api/uname2uid/{user_id}"
 
@@ -55,8 +55,11 @@ class UvaPractice(PracticePlatformBase):
         LOG.debug(f"Submissions url: [{submissions_url}]")
         
         submissions = UvaPractice.WR.get(submissions_url)
-        if (submissions is None) or ("subs" not in submissions) or (len(submissions["subs"]) == 0):
+        if (submissions is None) or ("subs" not in submissions):
             fail(f"No submissions found for user: [{usr_handle}] at [{uid}]", LOG)
+        
+        if len(submissions["subs"]) == 0:
+            return 0
 
         # NOTE: We could take advantage of the ordering, but if we choose to pursue other alternative to 
         # reduce the number of submissions returned in the first place, we may not need this. So, for now,

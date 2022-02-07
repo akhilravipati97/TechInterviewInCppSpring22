@@ -105,9 +105,15 @@ class CodechefPractice(ContestPlatformBase):
             tr_vals = soup.select("table[class='dataTable'] > tbody > tr")
             LOG.debug(f"num tr_vals: [{len(tr_vals)}]")
 
-            for tr_val in tr_vals:
+            for i, tr_val in enumerate(tr_vals):
                 td_vals = tr_val.select("td")
                 LOG.debug(f"\tnum td_vals: [{len(td_vals)}]")
+
+                if i == 0 and len(tr_vals) == 1 and len(td_vals) == 1 and td_vals[0].get('title').strip() == "No Recent Activity":
+                    LOG.debug(f"No activity found for user: [{usr_handle}]. Returning.")
+                    short_circuit = True
+                    break
+
                 time_text = td_vals[0].get("title").strip()
                 link_text = td_vals[1].select_one("a").get("href").strip()
                 status = td_vals[2].select_one("span").get("title").strip()

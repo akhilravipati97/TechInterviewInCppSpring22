@@ -26,6 +26,7 @@ import traceback
 from collections import defaultdict
 from csv import DictReader
 from pprint import pformat
+from util.common import star
 
 LOG = get_logger("Grader")
 
@@ -49,8 +50,8 @@ def get_users() -> List[User]:
             last_name = row["last_name"]
             name = first_name
             if middle_name != "N/A":
-                name += middle_name
-            name += last_name
+                name += (" " + middle_name)
+            name += ( " " + last_name)
 
             # Uni
             uni = row["uni"]
@@ -80,7 +81,7 @@ def save_grade_event(grade_file_path: Path, gd: Grading, usr: User, platform, is
         week_num=gd.week_num,
         uni=usr.user_id,
         platform_name=platform.name(),
-        is_exception=is_exception,
+        is_exception='true' if is_exception else 'false',
         points=points,
         event_type=event_type,
         event_name=event_name)
@@ -102,7 +103,7 @@ def grade_practice(gd: Grading, usr: User, platform: PracticePlatformBase, conte
         LOG.error(f"Exception for {platform.name()} ^")
 
     save_grade_event(grade_file_path, gd, usr, platform, is_exception, practice_points, 'practice', '')
-    LOG.debug(f"User: [{usr.user_id}] for platform: [{platform.name}] for practice, has points: [{practice_points}]")
+    LOG.debug(f"User: [{usr.user_id}] for platform: [{platform.name()}] for practice, has points: [{practice_points}]")
 
 
 
@@ -120,12 +121,12 @@ def grade_contest(gd: Grading, usr: User, platform: ContestPlatformBase, ct: Con
         LOG.error(f"Exception for platform: [{platform.name()}] for contest: [{ct.contest_id}] ^")
 
     save_grade_event(grade_file_path, gd, usr, platform, is_exception, contest_points, 'contest', ct.contest_id)
-    LOG.debug(f"User: [{usr.user_id}] for platform: [{platform.name}] for contest: [{ct.contest_id}] has points: [{contest_points}]")
+    LOG.debug(f"User: [{usr.user_id}] for platform: [{platform.name()}] for contest: [{ct.contest_id}] has points: [{contest_points}]")
     return contest_solved_questions
 
 
 
-def grade(week_num: int):
+def grade(week_num: int, force: bool):
     """
     This method will iterate over all registered users for each contest based platform and practice based platform and collect the number of correct submissions
     and gather points.
@@ -141,20 +142,28 @@ def grade(week_num: int):
     print_str = pformat({platform.name(): [ct.contest_id for ct in contests] for platform, contests in PLATFORM_CONTESTS_MAP.items()}, indent=2)
     LOG.info(f"Platform contests map: [\n{print_str}\n]")
     LOG.info(f"Num users: [{len(ALL_USERS)}]")
-    input("Ready?")
+    
 
     # Create grade file if not present
     grade_file_name = f"grade_{gd.week_num}.log"
     grade_file_path = CACHE_PATH.joinpath(grade_file_name)
     if not grade_file_path.exists():
         grade_file_path.touch()
+    elif force:
+        new_grade_file_path = CACHE_PATH.joinpath(f"grade_{gd.week_num}_old_{int(get_curr_dt_est().timestamp()*1000)}.log")
+        grade_file_path.replace(new_grade_file_path)
+        grade_file_path.touch()
 
     # Begin creating grading events
     for usr in ALL_USERS:
+        star(f"\n\nGrading user: [{usr.name}] with uni: [{usr.uni}]", LOG)
+
         # 1. First calculate for contests. They carry a lot mote points and so in case of double counting (submission that appear as contest submissions and normal practice problems)
         # points obtained for contests take precedence.
         platform_contest_solved_questions_map = defaultdict(dict)
         for platform, contests in PLATFORM_CONTESTS_MAP.items():
+            star(f"Grading contests for user: [{usr.name}] with uni: [{usr.uni}] for platform: [{platform.name()}]", LOG)
+
             contest_solved_questions_map = dict()
             for ct in contests: 
                 # Iterate on contests in the inner most loop so that we don't get rate-limited for hitting too often (depsite our internal rate-limiting controls)
@@ -167,6 +176,7 @@ def grade(week_num: int):
         # 2. Once all contest calculations for a user are over, calculate for practice problems. 
         # Remember to pass submissions seen in contests on the same platform before to protect from double counting.
         for platform in PRACTICE_PLATFORMS:
+            star(f"Grading practice for user: [{usr.name}] with uni: [{usr.uni}] for platform: [{platform.name()}]", LOG)
             grade_practice(gd, usr, platform, platform_contest_solved_questions_map[platform.name()], grade_file_path)
 
 
@@ -174,9 +184,10 @@ def grade(week_num: int):
 def parse_args():
     parser = argparse.ArgumentParser(description='Grader for COMS-W4995-14 Tech Interview in C++, Spring 2022')
     parser.add_argument('-w', '--week', help="Week number, ex: 5, or 6...", required=True, dest="week_num", type=int)
+    parser.add_argument('-f', '--force', help="Flag to indicate to ignore older grading events and calculate afresh", dest="force", action="store_true")
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
-    grade(args.week_num)
+    grade(args.week_num, args.force)

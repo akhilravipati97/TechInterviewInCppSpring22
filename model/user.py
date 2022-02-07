@@ -13,5 +13,5 @@ class User:
     
     def handle(self, platform_name: str) -> str:
         if platform_name not in self.usr_id_map:
-            fail(f"user: [{self.name}] does not have a handle for [{platform_name}]")
+            fail(f"user: [{self.name}] does not have a handle for [{platform_name}]", LOG)
         return self.usr_id_map[platform_name]
