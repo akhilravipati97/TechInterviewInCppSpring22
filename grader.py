@@ -38,7 +38,7 @@ PRACTICE_PLATFORMS = [CodeforcesPractice(), AtcoderPractice(), CodechefPractice(
 
 def get_users() -> List[User]:
     users = []
-    with open(CACHE_PATH.joinpath("handles_temp.csv"), "r") as f:
+    with open(CACHE_PATH.joinpath("handles.csv"), "r") as f:
         reader = DictReader(f)
         for row in reader:
             if row["registered"] != "Yes":
