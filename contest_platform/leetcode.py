@@ -177,7 +177,7 @@ class Leetcode(ContestPlatformBase):
                 page_num += 1
             
             
-            with open(cache_file_path, "w") as f:
+            with open(cache_file_path, "w", encoding='utf-8') as f:
                 f.write(json.dumps(cache_dict))
                 LOG.info(f"Cached results for week: [{gd.week_num}] and contest: [{ct.contest_id}] at: [{cache_file_name}]")
         
@@ -215,7 +215,7 @@ class Leetcode(ContestPlatformBase):
             cache_file_path = CACHE_PATH.joinpath(cache_file_name)
             if not cache_file_path.exists():
                 fail(f"Pre-processed cache missing for contest: [{ct.contest_id}] for week: [{gd.week_num}]. Please perform pre-processing first for this platform", LOG)
-            with open(cache_file_path, "r") as f:
+            with open(cache_file_path, "r", encoding='utf-8') as f:
                 Leetcode.POINTS_CACHE[ct.contest_id] = json.loads(f.read())
 
         return self.__get_points(usr, ct)

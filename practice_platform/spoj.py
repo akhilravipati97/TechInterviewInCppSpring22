@@ -54,7 +54,13 @@ class SpojPractice(PracticePlatformBase):
 
             if len(tr_vals) > SpojPractice.SUBMISSIONS_PER_PAGE_LIMIT:
                 LOG.warn(f"more tr_vals found: [{len(tr_vals)}] than expected: [{SpojPractice.SUBMISSIONS_PER_PAGE_LIMIT}]")
-            if len(tr_vals) == 0:
+            elif len(tr_vals) < SpojPractice.SUBMISSIONS_PER_PAGE_LIMIT:
+                # For some reason Spoj keeps showing the same submissions even if we request with a larger start number in the next iteration.
+                # So, we need to stop after the current iteration as soon as we see less than expected submissions.
+                LOG.debug(f"less that [{SpojPractice.SUBMISSIONS_PER_PAGE_LIMIT}] tr_vals found. So, short circuit.")
+                short_circuit = True
+            elif len(tr_vals) == 0:
+                LOG.debug(f"No tr_vals found. So, that's the end of submissions.")
                 short_circuit = True
                 break
 

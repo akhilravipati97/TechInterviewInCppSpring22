@@ -35,7 +35,7 @@ def calculate(week_num: int):
     # Gather into map
     usr_points_map = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
     num_exceptions = 0
-    with open(grade_events_path, "r") as f:
+    with open(grade_events_path, "r", encoding='utf-8') as f:
         for line in f:
             LOG.debug(f"line: {line}")
             data = json.loads(line)

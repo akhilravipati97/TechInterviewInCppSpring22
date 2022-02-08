@@ -38,7 +38,7 @@ PRACTICE_PLATFORMS = [CodeforcesPractice(), AtcoderPractice(), CodechefPractice(
 
 def get_users() -> List[User]:
     users = []
-    with open(CACHE_PATH.joinpath("handles.csv"), "r") as f:
+    with open(CACHE_PATH.joinpath("handles.csv"), "r", encoding='utf-8') as f:
         reader = DictReader(f)
         for row in reader:
             if row["registered"] != "Yes":
@@ -65,7 +65,7 @@ def get_users() -> List[User]:
                 value = row.get(platform_name, None)
                 value =  value.strip() if value is not None else value
 
-                if value is None or value == "":
+                if value is None or value == "" or "N/A" in value:
                     LOG.error(f"User: [{name}] with uni: [{uni}] has no id specified for platform: [{platform_name}]. Setting it to None for now. Needs fixing.")
                     value = None
                 elif " " in value:
@@ -89,7 +89,7 @@ def save_grade_event(grade_file_path: Path, gd: Grading, usr: User, platform, is
         event_type=event_type,
         event_name=event_name)
 
-    with open(grade_file_path, "a") as f:
+    with open(grade_file_path, "a", encoding='utf-8') as f:
         f.write("{" + event_str + "}" + "\n")
 
 
