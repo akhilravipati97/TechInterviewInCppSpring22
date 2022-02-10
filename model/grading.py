@@ -31,5 +31,3 @@ class Grading:
             self.week_start_dt, self.week_end_dt, self.week_num = get_course_week_by_num(week_num)
         else:
             fail(f"Unknown branch of execution", LOG)
-
-        LOG.info(f"Grading week num: [{self.week_num}], start: [{self.week_start_dt}], end: [{self.week_end_dt}]")

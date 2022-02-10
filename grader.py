@@ -26,7 +26,7 @@ import traceback
 from collections import defaultdict
 from csv import DictReader
 from pprint import pformat
-from util.common import star
+from util.common import star, fail
 
 LOG = get_logger("Grader")
 
@@ -134,37 +134,77 @@ def grade_contest(gd: Grading, usr: User, platform: ContestPlatformBase, ct: Con
 
 
 
-def grade(week_num: int, force: bool):
+def grade(week_num: int, force: bool, uni: str, platform_name: str):
     """
     This method will iterate over all registered users for each contest based platform and practice based platform and collect the number of correct submissions
     and gather points.
 
     It will save each point decision made as an event in the log file that methods/programs later can use to build out more stats and finalize grades.
+
+    However, if 'uni' is provided it will only grade for that user. If 'platform' is provided it will only grade for that platform. Supplying both will cause both
+    filters to apply.
     """
+    global CONTEST_PLATFORMS, PRACTICE_PLATFORMS
 
     # Some globals
     gd = Grading(week_num=week_num) # grading timeline
-    PLATFORM_CONTESTS_MAP = {platform: platform.all_contests(gd) for platform in CONTEST_PLATFORMS} # Map of each platform's contests during the grading week
     ALL_USERS = get_users()
+
+    # Filters
+    uni = uni.strip() if uni is not None else uni
+    platform_name = platform_name.strip() if platform_name is not None else platform_name
+
+    if uni is not None and uni != "":
+        uni = uni.strip()
+        LOG.info(f"Applying uni filter: [{uni}]")
+        ALL_USERS = [usr for usr in ALL_USERS if usr.uni == uni]
+
+    if platform_name is not None and platform_name != "":
+        platform_name = platform_name.strip()
+        LOG.info(f"Applying platform name filter: [{platform_name}]")
+        CONTEST_PLATFORMS = [pt for pt in CONTEST_PLATFORMS if pt.name() == platform_name]
+        PRACTICE_PLATFORMS = [pt for pt in PRACTICE_PLATFORMS if pt.name() == platform_name]
     
-    print_str = pformat({platform.name(): [ct.contest_id for ct in contests] for platform, contests in PLATFORM_CONTESTS_MAP.items()}, indent=2)
-    LOG.info(f"Platform contests map: [\n{print_str}\n]")
+    LOG.info("\n\n")
+    star(f"Grading info", LOG, 100)
+    LOG.info(f"Grading week num: [{gd.week_num}], start: [{gd.week_start_dt}], end: [{gd.week_end_dt}]")
     LOG.info(f"Num users: [{len(ALL_USERS)}]")
+    LOG.info(f"Contest platforms: [{[pt.name() for pt in CONTEST_PLATFORMS]}]")
+    LOG.info(f"Practice platforms: [{[pt.name() for pt in PRACTICE_PLATFORMS]}]")
+    star(f".", LOG, 100)
+    LOG.info("\n\n")
     
 
     # Create grade file if not present
-    grade_file_name = f"grade_{gd.week_num}.log"
+    grade_file_name = f"grade_{gd.week_num}"
+    if uni != "":
+        grade_file_name += f"_{uni}"
+    if platform_name != "":
+        grade_file_name += f"_{platform_name}"
+    grade_file_name += ".log"
+
     grade_file_path = CACHE_PATH.joinpath(grade_file_name)
     if not grade_file_path.exists():
         grade_file_path.touch()
     elif force:
-        new_grade_file_path = CACHE_PATH.joinpath(f"grade_{gd.week_num}_old_{int(get_curr_dt_est().timestamp()*1000)}.log")
+        new_grade_file_name = grade_file_name.replace(".log", "")
+        new_grade_file_name += f"_old_{int(get_curr_dt_est().timestamp()*1000)}.log"
+        new_grade_file_path = CACHE_PATH.joinpath(new_grade_file_name)
+        LOG.info(f"Replaced [{grade_file_path}] with [{new_grade_file_path}]")
         grade_file_path.replace(new_grade_file_path)
         grade_file_path.touch()
+    else:
+        fail(f"Grading file [{grade_file_path}] already exists. Use force to override the older file.")
+
+    
+    # Collect all contests
+    PLATFORM_CONTESTS_MAP = {platform: platform.all_contests(gd) for platform in CONTEST_PLATFORMS} # Map of each platform's contests during the grading week
+    print_str = pformat({platform.name(): [ct.contest_id for ct in contests] for platform, contests in PLATFORM_CONTESTS_MAP.items()}, indent=2)
+    LOG.info(f"Platform contests map: [\n{print_str}\n]")
 
     # Begin creating grading events
     for usr in ALL_USERS:
-        star(f"\n\nGrading user: [{usr.name}] with uni: [{usr.uni}]", LOG)
+        star(f"Grading user: [{usr.name}] with uni: [{usr.uni}]", LOG)
 
         # 1. First calculate for contests. They carry a lot mote points and so in case of double counting (submission that appear as contest submissions and normal practice problems)
         # points obtained for contests take precedence.
@@ -193,9 +233,11 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Grader for COMS-W4995-14 Tech Interview in C++, Spring 2022')
     parser.add_argument('-w', '--week', help="Week number, ex: 5, or 6...", required=True, dest="week_num", type=int)
     parser.add_argument('-f', '--force', help="Flag to indicate to ignore older grading events and calculate afresh", dest="force", action="store_true")
+    parser.add_argument('-u', '--uni', help="Grade a particular user by providing their uni (eg: ar4160, ak3232)", dest="uni")
+    parser.add_argument('-p', '--platform', help="Grade a particular platform by providing the platform name (eg: Leetcode, Codeforces, Spoj)", dest="platform_name")
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
-    grade(args.week_num, args.force)
+    grade(args.week_num, args.force, args.uni, args.platform_name)

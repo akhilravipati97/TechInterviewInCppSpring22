@@ -95,6 +95,7 @@ def calculate(week_num: int):
         row["total_practice_points"] = practice_points
 
         row["total_points"] = contest_points + practice_points
+        row["comments"] = ""
         rows.append(row)
 
 
