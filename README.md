@@ -20,9 +20,12 @@
     - This can take up to ~30min-1hr.
     - If someone's already done this, they can share the preprocessing cache files to avoid waiting.
 - Run the grader next: `python3 grader.py -w <week_num>`
-    - It will store grading events in `/path/to/cache/dir/grade_<week_num>.log`.
+    - It will store grading events in `/path/to/cache/dir/grading_events_<week_num>.log`.
 - Run the calculator/assimilator next: `python3 calculate_points.py -w <week_num>`
     - It will store the grades/points in `/path/to/cache/dir/grades_<week_num>.csv`
+- After all grades in `grades_<week_num>.csv` have been finalized i.e. `final_points` column filled, download the gradebook from courseworks run the populate gradebook script: `python3 populate_gradebook.py -w <week_num> -c /path/to/courseworks/gradebook.csv`
+- **NOTE**:
+    - You can run the grader for a single person and/or a single platform by `python3 grader.py -w <week_num> -u <uni> -p <platform_name_used_in_code>`. This is very useful to crosscheck certain scores.
 
 
 ## Current Shortcomings
