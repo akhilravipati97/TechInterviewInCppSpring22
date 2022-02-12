@@ -21,7 +21,7 @@ def parse_args():
 
 def calculate(week_num: int):
     grade_sheet_path = CACHE_PATH.joinpath(f"grades_{week_num}.csv")
-    grade_events_path = CACHE_PATH.joinpath(f"grade_{week_num}.log")
+    grade_events_path = CACHE_PATH.joinpath(f"grading_events_{week_num}.log")
     uni_to_courseworks_path = CACHE_PATH.joinpath("uni_courseworks_id.csv")
     
     if not grade_events_path.exists():

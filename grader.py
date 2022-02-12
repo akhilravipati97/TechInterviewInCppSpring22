@@ -176,7 +176,7 @@ def grade(week_num: int, force: bool, uni: str, platform_name: str):
     
 
     # Create grade file if not present
-    grade_file_name = f"grade_{gd.week_num}"
+    grade_file_name = f"grading_events_{gd.week_num}"
     if uni != "":
         grade_file_name += f"_{uni}"
     if platform_name != "":
