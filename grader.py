@@ -177,9 +177,9 @@ def grade(week_num: int, force: bool, uni: str, platform_name: str):
 
     # Create grade file if not present
     grade_file_name = f"grading_events_{gd.week_num}"
-    if uni != "":
+    if uni is not None and uni != "":
         grade_file_name += f"_{uni}"
-    if platform_name != "":
+    if platform_name is not None and platform_name != "":
         grade_file_name += f"_{platform_name}"
     grade_file_name += ".log"
 
