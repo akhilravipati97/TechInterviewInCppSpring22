@@ -137,6 +137,7 @@ class CodechefPractice(ContestPlatformBase):
         real_practice_problems = dict()
         for contest_id, problems in contest_practice_problems.items():
             if contest_id in usr_cts_sq:
+                LOG.debug(f"User: [{usr_handle}] for contest: [{contest_id}] problems: [{problems}], contest_problems: [{usr_cts_sq[contest_id]}]")
                 separate_problems = problems - usr_cts_sq[contest_id]
                 LOG.debug(f"User: [{usr_handle}] already participared in contest: [{contest_id}]. Unsolved, i.e num practice problems are: [{len(separate_problems)}] which are: [{separate_problems}]")
                 real_practice_problems[contest_id] = separate_problems

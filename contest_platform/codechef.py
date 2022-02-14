@@ -157,14 +157,24 @@ class Codechef(ContestPlatformBase):
             return Submission()
         td_vals = tr_vals[0].find_elements_by_css_selector("td")
         LOG.debug(f"Num div found: {len(td_vals)}")
-        td_vals = td_vals[4:] # The 5th onwards are the actual problems
 
 
         # Get table headers for problem names
         th_vals = driver.find_elements_by_css_selector("table[class='dataTable'] > thead > tr > th")
         LOG.debug(f"Num th found: {len(th_vals)}")
-        th_vals = th_vals[4:] # The 5th name onwards are the problem names
-        problem_names = [th_val.find_element_by_css_selector("a > div:nth-child(2)").text.strip() for th_val in th_vals]
+
+        # Calc offset
+        # The 4th/5th name onwards are the problem names. ex: https://www.codechef.com/rankings/COOK137C?order=asc&search=idm2114&sortBy=rank vs https://www.codechef.com/rankings/START23A?order=asc&search=idm2114&sortBy=rank
+        offset=3
+        if len(th_vals[3].find_elements_by_css_selector("a > div:nth-child(2)")) == 0:
+            offset += 1
+
+        # Push td and th offset nums
+        td_vals = td_vals[offset:]
+        th_vals = th_vals[offset:]
+
+        # Get on with problems names and score    
+        problem_names = [th_val.find_element_by_css_selector("a").get_attribute("href").split("sortBy=")[1].strip() for th_val in th_vals]
         LOG.debug(f"problem names: {problem_names}")
 
         solved_questions = set()
