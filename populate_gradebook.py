@@ -10,14 +10,16 @@ LOG = get_logger("PopulateGradebook")
 def parse_args():
     parser = argparse.ArgumentParser(description='Events preprocessor - to generate graders')
     parser.add_argument('-w', '--week', help="Week number, ex: 5, or 6...", required=True, dest="week_num", type=int)
-    parser.add_argument('-c', '--gradebook', help="Path to gradebook csv exported from courseworks", required=True, dest="gradebook_path")
+    parser.add_argument('-c', '--gradebook', help="Path (incl. file name) to gradebook csv exported from courseworks", required=True, dest="gradebook_path")
+    parser.add_argument('-g', '--grades', help="Path (incl. file name) to grades csv where final_points were entered manually", dest="grades_path")
+    parser.add_argument('-o', '--output', help="Path (incl. file name) to output gradebook csv with the final grades to be imported to courseworks", dest="output_path")
     return parser.parse_args()
 
 
-def populate(week_num: int, gradebook_path: str):
+def populate(week_num: int, gradebook_path: str, grades_path: str = None, new_gradebook_path: str = None):
     gradebook_path = Path(gradebook_path)
-    new_gradebook_path = CACHE_PATH.joinpath(f"courseworks_new_grades_{week_num}.csv")
-    calculated_grades_path = CACHE_PATH.joinpath(f"grades_{week_num}.csv")
+    new_gradebook_path = CACHE_PATH.joinpath(f"courseworks_new_grades_{week_num}.csv") if new_gradebook_path is None else Path(new_gradebook_path)
+    calculated_grades_path = CACHE_PATH.joinpath(f"grades_{week_num}.csv") if grades_path is None else Path(grades_path)
 
     # file checks
     if not gradebook_path.exists():
@@ -32,9 +34,10 @@ def populate(week_num: int, gradebook_path: str):
     
     # read calculated grades
     uni_points = dict()
-    with open(calculated_grades_path, "r", encoding='utf-8', newline='') as f:
+    with open(calculated_grades_path, "r", newline='') as f:
         reader = DictReader(f)
         for row in reader:
+            print(row)
             final_points = row["final_points"]
             final_points = final_points.strip() if final_points is not None else final_points
             uni = row["uni"]
@@ -89,4 +92,4 @@ def populate(week_num: int, gradebook_path: str):
 
 if __name__ == "__main__":
     args = parse_args()
-    populate(args.week_num, args.gradebook_path)
+    populate(args.week_num, args.gradebook_path, args.grades_path, args.output_path)
