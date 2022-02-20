@@ -6,6 +6,7 @@ import requests as r
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from constants import CHROME_DRIVER_PATH
+import random
 
 LOG = get_logger("WebRequest")
 
@@ -14,6 +15,7 @@ class WebRequest:
         self.rate_limit_millis = rate_limit_millis
         self.last_request_ts_millis = 0
         self.web_request_obj_id = str(uuid.uuid4())
+        self.MAX_JITTER_MILLIS = 2000
 
         options = Options()
         options.headless = True
@@ -26,8 +28,9 @@ class WebRequest:
             diff_millis = req_ts_millis - self.last_request_ts_millis
             LOG.debug(f"[{self.web_request_obj_id}]: Diff: {diff_millis}(ms), Rate limit: {self.rate_limit_millis}(ms)")
             if diff_millis <= self.rate_limit_millis:
-                LOG.info(f"[{self.web_request_obj_id}]: Rate limit applied. Sleeping for {diff_millis}(ms).")
-                time.sleep(diff_millis/1000.0) # sleep takes seconds - fractional values are allowed, so we're good
+                random_jitter_millis = random.randint(0, self.MAX_JITTER_MILLIS)
+                LOG.info(f"[{self.web_request_obj_id}]: Rate limit applied. Sleeping for {diff_millis}(ms) + random jitter {random_jitter_millis}(ms), i.e a total of {random_jitter_millis + diff_millis}(ms)")
+                time.sleep((diff_millis + random_jitter_millis)/1000.0) # sleep takes seconds but fractional values are allowed, so dividing by 1000 is alright, no info lost
         self.last_request_ts_millis = req_ts_millis
 
     def scrape(self, url: str) -> webdriver.Chrome:
