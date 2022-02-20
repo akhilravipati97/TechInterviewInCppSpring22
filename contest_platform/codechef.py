@@ -6,7 +6,7 @@ from contest_platform.base import ContestPlatformBase, Grading, User, Contest
 from datetime import datetime, timedelta
 import requests as r
 from util.datetime import in_between_dt, to_dt_from_ts
-from constants import EST_TZINFO
+from constants import EST_TZINFO, IST_TZINFO
 from util.common import fail
 
 LOG = get_logger("Codechef")
@@ -39,6 +39,13 @@ class Codechef(ContestPlatformBase):
 
     def name(self):
         return Codechef.PLATFORM
+
+
+    def __get_dt(self, text: str) -> datetime:
+        dt = datetime.strptime(text, "%d-%m-%Y %H:%M:%S")
+        dt.replace(tzinfo=IST_TZINFO)
+        dt = dt.astimezone(EST_TZINFO)
+        return dt
 
 
     def all_contests(self, gd: Grading) -> List[Contest]:
@@ -148,6 +155,7 @@ class Codechef(ContestPlatformBase):
         driver = Codechef.WR.scrape(submissions_url)
 
         # Get user's accepted solutions
+        # Need to filter these trs a little more because codechef returns prefix matches along with exact matches for username
         direct_tr_vals = driver.find_elements_by_css_selector("table[class='dataTable'] > tbody > tr")
         tr_vals = []
         for tr_val in direct_tr_vals:
@@ -190,9 +198,29 @@ class Codechef(ContestPlatformBase):
         for i, val in enumerate(td_vals):
             LOG.debug(f"[MAJOR*****] val: {val.text}")
             has_answered = val.find_elements_by_css_selector("div[class='scored-problem'] > a")
-            if len(has_answered) > 0:
+            if len(has_answered) not in [0, 1]:
+                fail(f"Unexpected count: [{len(has_answered)}] of answers found at: [{submissions_url}]", LOG)
+            if len(has_answered) == 1:
                 LOG.debug(f"[MAJOR NEXT*****] len: {len(has_answered)}, first val: {has_answered[0].text}")
-                solved_questions.add(problem_names[i])
+
+                # Because certain codechef contests (such as LONG) occur on weekends over friday, saturday and more,
+                # the submissions leak across 2 consecutive grading weeks, and risk getting double counted.
+                # So, we gotta check if each submission is within the grading week dates.
+                solution_href = has_answered[0].get_attribute("href")
+                LOG.debug(f"Fetching solution for a few more checks: [{solution_href}]")
+                driver2 = Codechef.WR.scrape(solution_href)
+                lis = driver2.find_elements_by_css_selector("div[class*='tab-pane solution-info'] ul > li")
+                if len(lis) <= 0:
+                    fail(f"Unexpected count: [{len(lis)}] for list in solutions pane")
+                li = lis[0]
+                solution_dt = self.__get_dt(li.text)
+                if in_between_dt(solution_dt, gd.week_start_dt, gd.week_end_dt):
+                    solved_questions.add(problem_names[i])
+                else:
+                    LOG.debug(f"Problem: [{problem_names[i]}] was submitted at [{solution_dt}] which is past the current grading week: [{gd.week_num}], so not counting it.")
+
+                if driver2 is not None:
+                    driver2.quit()
 
         if driver is not None:
             driver.quit()
