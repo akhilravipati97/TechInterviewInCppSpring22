@@ -146,8 +146,8 @@ class CodechefPractice(ContestPlatformBase):
             
         num_real_practice_problems = sum([len(problems) for problems in real_practice_problems.values()])
         num_separate_practice_problems = len(separate_practice_problems)
-        LOG.debug(f"User: [{usr_handle}] has solved real contest practice problems: [{num_real_practice_problems}] questions: [{real_practice_problems}]")
-        LOG.debug(f"User: [{usr_handle}] has solved separate practice problems: [{num_separate_practice_problems}] questions: [{separate_practice_problems}]")
+        LOG.debug(f"User: [{usr_handle}] has solved contest's problems as practice later: [{num_real_practice_problems}] questions: [{real_practice_problems}]")
+        LOG.debug(f"User: [{usr_handle}] has solved separate non-contest practice problems: [{num_separate_practice_problems}] questions: [{separate_practice_problems}]")
         total =  num_real_practice_problems + num_separate_practice_problems
         LOG.debug(f"User: [{usr_handle}] has total: [{total}] problems as practice")
         return total
