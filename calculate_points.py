@@ -71,7 +71,7 @@ def calculate(week_num: int):
     practice_platform_headers = sorted([platform.name() for platform in PRACTICE_PLATFORMS])
 
     final_headers = ["uni", "name", "courseworks_id"]
-    final_headers += ["final_points", "comments"]
+    final_headers += ["final_points", "comments", "private_comments"]
     final_headers += ["total_contest_points", "total_practice_points", "total_points"]
     final_headers += [ct + "_contest" for ct in contest_platform_headers]
     final_headers += [pt + "_practice" for pt in practice_platform_headers]
@@ -96,6 +96,7 @@ def calculate(week_num: int):
 
         row["total_points"] = contest_points + practice_points
         row["comments"] = ""
+        row["private_comments"] = ""
         rows.append(row)
 
 
