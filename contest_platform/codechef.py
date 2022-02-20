@@ -148,7 +148,16 @@ class Codechef(ContestPlatformBase):
         driver = Codechef.WR.scrape(submissions_url)
 
         # Get user's accepted solutions
-        tr_vals = driver.find_elements_by_css_selector("table[class='dataTable'] > tbody > tr")
+        direct_tr_vals = driver.find_elements_by_css_selector("table[class='dataTable'] > tbody > tr")
+        tr_vals = []
+        for tr_val in direct_tr_vals:
+            user_handle_a_tags = tr_val.find_elements_by_css_selector("td[class='user-handle'] div > a")
+            if len(user_handle_a_tags) == 1:
+                user_handle_a_tag = user_handle_a_tags[0]
+                user_link = user_handle_a_tag.get_attribute("href")
+                if user_link.split("/")[-1] == usr_handle:
+                    tr_vals.append(tr_val)
+
         LOG.debug(f"Num tr found: {len(tr_vals)}")
         if len(tr_vals) not in [0, 1]:
             fail(f"Unexpected count: [{len(tr_vals)}] of ranking found for: [{submissions_url}]", LOG)
