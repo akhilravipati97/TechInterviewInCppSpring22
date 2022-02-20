@@ -129,7 +129,7 @@ def grade_contest(gd: Grading, usr: User, platform: ContestPlatformBase, ct: Con
         LOG.error(f"Exception for platform: [{platform.name()}] for contest: [{ct.contest_id}] ^")
 
     save_grade_event(grade_file_path, gd, usr, platform, is_exception, contest_points, 'contest', ct.contest_id)
-    LOG.debug(f"User: [{usr.user_id}] for platform: [{platform.name()}] for contest: [{ct.contest_id}] has points: [{contest_points}]")
+    LOG.debug(f"User: [{usr.user_id}] for platform: [{platform.name()}] for contest: [{ct.contest_id}] has points: [{contest_points}] <----------------------------------- THIS ---------") # For ease of spotting in the logs
     return contest_solved_questions
 
 
