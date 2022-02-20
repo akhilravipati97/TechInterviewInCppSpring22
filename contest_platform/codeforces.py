@@ -114,7 +114,7 @@ class Codeforces(ContestPlatformBase):
 
         solved_questions = set()
         for submission in submissions["result"]:
-            if submission["verdict"] == "OK":
+            if submission["verdict"] == "OK" and submission["author"]["participantType"] == "CONTESTANT":
                 solved_questions.add(submission["problem"]["name"] + " -- " + submission["problem"]["index"] )
 
         LOG.debug(f"User [{usr_handle}] in contest [{ct.contest_id}] solved these questions: [{solved_questions}]")

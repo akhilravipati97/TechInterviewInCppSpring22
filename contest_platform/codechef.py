@@ -180,7 +180,7 @@ class Codechef(ContestPlatformBase):
         solved_questions = set()
         for i, val in enumerate(td_vals):
             LOG.debug(f"[MAJOR*****] val: {val.text}")
-            has_answered = val.find_elements_by_css_selector("div > a")
+            has_answered = val.find_elements_by_css_selector("div[class='scored-problem'] > a")
             if len(has_answered) > 0:
                 LOG.debug(f"[MAJOR NEXT*****] len: {len(has_answered)}, first val: {has_answered[0].text}")
                 solved_questions.add(problem_names[i])
