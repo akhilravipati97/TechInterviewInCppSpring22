@@ -53,7 +53,7 @@ class CodechefPractice(ContestPlatformBase):
                 fail(f"Unexpected path for time parsing: [{time_text}]", LOG)
         else:
             curr_dt = datetime.strptime(time_text, "%I:%M %p %d/%m/%y")
-            curr_dt.replace(tzinfo=IST_TZINFO)
+            curr_dt = curr_dt.replace(tzinfo=IST_TZINFO)
             curr_dt = curr_dt.astimezone(EST_TZINFO)
             return curr_dt
 
