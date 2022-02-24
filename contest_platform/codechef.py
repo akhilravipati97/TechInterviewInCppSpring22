@@ -43,7 +43,7 @@ class Codechef(ContestPlatformBase):
 
     def __get_dt(self, text: str) -> datetime:
         dt = datetime.strptime(text, "%d-%m-%Y %H:%M:%S")
-        dt.replace(tzinfo=IST_TZINFO)
+        dt = dt.replace(tzinfo=IST_TZINFO)
         dt = dt.astimezone(EST_TZINFO)
         return dt
 
