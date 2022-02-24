@@ -85,12 +85,12 @@ class Codechef(ContestPlatformBase):
 
             curr_contests = curr_contests["contests"]
             for curr_contest in curr_contests:
-                curr_contest_dt = datetime.fromisoformat(curr_contest["contest_start_date_iso"])
+                curr_contest_dt = datetime.fromisoformat(curr_contest["contest_end_date_iso"])
                 if in_between_dt(curr_contest_dt, gd.week_start_dt, gd.week_end_dt):
                     parent_contests.append(curr_contest)
 
-            if datetime.fromisoformat(curr_contests[-1]["contest_start_date_iso"]) < gd.week_start_dt:
-                LOG.debug(f"Breaking because {curr_contests[-1]['contest_start_date_iso']} is older that {gd.week_start_dt}")
+            if datetime.fromisoformat(curr_contests[-1]["contest_end_date_iso"]) < gd.week_start_dt:
+                LOG.debug(f"Breaking because contest end date: [{curr_contests[-1]['contest_end_date_iso']}] is earlier that grading start week: [{gd.week_start_dt}]")
                 break
             else:
                 curr_offset += Codechef.CONTESTS_URL_OFFSET_DIFF
