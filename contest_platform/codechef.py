@@ -132,7 +132,7 @@ class Codechef(ContestPlatformBase):
                 child_contests.append({**parent_contest, "child_contest_code": child_contest_code})
 
 
-        contests = [{**contest, "startDatetime": datetime.fromisoformat(contest["contest_start_date_iso"])} for contest in child_contests]
+        contests = [{**contest, "startDatetime": datetime.fromisoformat(contest["contest_end_date_iso"])} for contest in child_contests]
         contests = [contest for contest in contests if in_between_dt(contest["startDatetime"], gd.week_start_dt, gd.week_end_dt)]
         LOG.debug(f"Contests: {[c['child_contest_code'] for c in contests]}")
         return [Contest(str(contest["child_contest_code"])) for contest in contests]
