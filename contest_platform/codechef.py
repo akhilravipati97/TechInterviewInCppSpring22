@@ -28,7 +28,10 @@ class Codechef(ContestPlatformBase):
     CONTESTS_URL = "https://www.codechef.com/api/list/contests/past?sort_by=START&sorting_order=desc&offset={offset_count}&mode=premium"
     CONTESTS_URL_OFFSET_DIFF = 20
 
-    # Each parent contest has a bunch of child contests based on ratings - div1, div2 etc.
+    # Each parent contest has a bunch of child contests based on ratings - div1, div2 etc, and some of those
+    # child contests maybe unrated.
+    # This is the URL to fetch list of child contests by providing parent contest code, and checking out details
+    # about the child contest by providing the child contest code 
     CHILD_CONTESTS_URL = "https://www.codechef.com/api/contests/{contest_code}"
     
     # https://www.codechef.com/api/contests/COOK127?v=1643691157039
@@ -120,16 +123,24 @@ class Codechef(ContestPlatformBase):
         child_contests = []
         for parent_contest in parent_contests:
             parent_contest_code = parent_contest["contest_code"]
-            child_contest_url = Codechef.CHILD_CONTESTS_URL.format(contest_code=parent_contest_code)
-            child_contest_resp = Codechef.WR.get(child_contest_url)
+            child_contests_url = Codechef.CHILD_CONTESTS_URL.format(contest_code=parent_contest_code)
+            child_contests_resp = Codechef.WR.get(child_contests_url)
 
-            if (child_contest_resp is None) or (child_contest_resp["status"] != "success"):
+            if (child_contests_resp is None) or (child_contests_resp["status"] != "success"):
                 fail(f"No child contests found for parent contest: {parent_contest_code}", LOG)
 
-            for child_contest_obj in child_contest_resp["child_contests"].values():
+            for child_contest_obj in child_contests_resp["child_contests"].values():
                 child_contest_code = child_contest_obj["contest_code"]
-                LOG.debug(f"For Parent contest: [{parent_contest_code}] a child contest is: [{child_contest_code}]")
-                child_contests.append({**parent_contest, "child_contest_code": child_contest_code})
+                child_contest_url = Codechef.CHILD_CONTESTS_URL.format(contest_code=child_contest_code)
+                child_contest_resp = Codechef.WR.get(child_contest_url)
+
+                if (child_contest_resp is None) or (child_contest_resp['status'] != "success"):
+                    fail(f"Child contests details not found: {child_contest_code}", LOG)
+
+                child_contest_unrated = "Unrated" in child_contest_resp["name"]
+                LOG.debug(f"For Parent contest: [{parent_contest_code}] a child contest is: [{child_contest_code}], and is: [{'unrated' if child_contest_unrated else 'rated'}]")
+                if not child_contest_unrated:
+                    child_contests.append({**parent_contest, "child_contest_code": child_contest_code})
 
 
         contests = [{**contest, "startDatetime": datetime.fromisoformat(contest["contest_end_date_iso"])} for contest in child_contests]
@@ -217,7 +228,7 @@ class Codechef(ContestPlatformBase):
                 if in_between_dt(solution_dt, gd.week_start_dt, gd.week_end_dt):
                     solved_questions.add(problem_names[i])
                 else:
-                    LOG.debug(f"Problem: [{problem_names[i]}] was submitted at [{solution_dt}] which is past the current grading week: [{gd.week_num}], so not counting it.")
+                    LOG.debug(f"Problem: [{problem_names[i]}] was submitted at [{solution_dt}] which is not within the current grading week: [{gd.week_num}], so not counting it.")
 
                 if driver2 is not None:
                     driver2.quit()

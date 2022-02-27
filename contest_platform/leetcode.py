@@ -165,7 +165,7 @@ class Leetcode(ContestPlatformBase):
                 for i, rank in enumerate(ranks):
                     user_name = rank["username"]
                     solved_questions = [str(question_id) + " -- " + questions[str(question_id)] for question_id, submission in submissions[i].items()]
-                    LOG.debug(f"user: [{user_name}] solved these questions: [{solved_questions}]")
+                    LOG.debug(f"user: [{user_name}] solved these questions: [{solved_questions}] page_num: [{page_num}]")
                     cache_dict[user_name] = solved_questions
 
                     # Short circuit if user had 0 submissions, as that is simply 0 points
