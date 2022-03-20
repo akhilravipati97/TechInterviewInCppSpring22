@@ -206,15 +206,15 @@ def grade(week_num: int, force: bool, uni: str, platform_name: str):
     for usr in ALL_USERS:
         star(f"Grading user: [{usr.name}] with uni: [{usr.uni}]", LOG)
 
-        # 1. First calculate for contests. They carry a lot mote points and so in case of double counting (submission that appear as contest submissions and normal practice problems)
-        # points obtained for contests take precedence.
+        # 1. First calculate for contests. They carry a lot more points and so in case of double counting (submission that appear as contest submissions and normal practice problems)
+        #    points obtained for contests take precedence.
         platform_contest_solved_questions_map = defaultdict(dict)
         for platform, contests in PLATFORM_CONTESTS_MAP.items():
             star(f"Grading contests for user: [{usr.name}] with uni: [{usr.uni}] for platform: [{platform.name()}]", LOG)
 
             contest_solved_questions_map = dict()
             for ct in contests: 
-                # Iterate on contests in the inner most loop so that we don't get rate-limited for hitting too often (depsite our internal rate-limiting controls)
+                # Iterate on contests in the inner most loop so that we don't get rate-limited for hitting too often (despite our internal rate-limiting controls)
                 contest_solved_questions = grade_contest(gd, usr, platform, ct, grade_file_path)
                 contest_solved_questions_map[ct.contest_id] = contest_solved_questions
             
@@ -222,7 +222,8 @@ def grade(week_num: int, force: bool, uni: str, platform_name: str):
 
 
         # 2. Once all contest calculations for a user are over, calculate for practice problems. 
-        # Remember to pass submissions seen in contests on the same platform before to protect from double counting.
+        #    Remember to pass submissions seen in contests on the same platform before to protect from double counting.
+        #    Ensure that the problem ids/names are consistent. i.e if a problem is called A on a contest, it better be called A as a practice problem too. Find such a common name and ensure to use that and pass that around
         for platform in PRACTICE_PLATFORMS:
             star(f"Grading practice for user: [{usr.name}] with uni: [{usr.uni}] for platform: [{platform.name()}]", LOG)
             grade_practice(gd, usr, platform, platform_contest_solved_questions_map[platform.name()], grade_file_path)
