@@ -109,7 +109,7 @@ def calculate(week_num: int):
         writer.writeheader()
         writer.writerows(rows)
 
-    LOG.info(f"Done. See file: {grade_events_path}")
+    LOG.info(f"Done. See file: {grade_sheet_path}")
 
         
 

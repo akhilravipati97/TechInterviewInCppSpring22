@@ -9,9 +9,11 @@
 
 ## Initialize values
 - Download [chromedriver]( https://chromedriver.chromium.org/downloads) and set its path in `constants.py`
+    - You may be required to upgrade the driver to a newer version from time to time (there'll be errors indicating that)
 - Create a cache directory for storing preprocessing results and grades. Set its path in `constant.py`
 - Copy `handles.csv` from the shared drive location and place it in the cache directory.
-- Create a `logs` directory in the project root if you wish the logger to auto spool to a log file along with console.
+    - This csv file contains each student's names, unis, and each of their coding platform/website handles.
+- Create a `logs` directory in the project root if you wish the logger to spool to a log file. Either way the grader will still print stuff to the console.
 
 
 ## Running the grader
@@ -23,9 +25,10 @@
     - It will store grading events in `/path/to/cache/dir/grading_events_<week_num>.log`.
 - Run the calculator/assimilator next: `python3 calculate_points.py -w <week_num>`
     - It will store the grades/points in `/path/to/cache/dir/grades_<week_num>.csv`
-- After all grades in `grades_<week_num>.csv` have been finalized i.e. `final_points` column filled, download the gradebook from courseworks run the populate gradebook script: `python3 populate_gradebook.py -w <week_num> -c /path/to/courseworks/gradebook.csv`
+- After all grades in `grades_<week_num>.csv` are finalized i.e. `final_points` column's filled (perhaps after a manual comparison with code/screenshots submitted by students), download/export the gradebook from courseworks and then run the populate gradebook script: `python3 populate_gradebook.py -w <week_num> -c /path/to/courseworks/exported/gradebook.csv -g /path/to/finalized/grades_<week_num>.csv -o /path/to/output/coursworks/import/gradebook.csv`
+    - The `-o` option is going to be the new file that the script will create which can be directly uploaded/imported on courseworks to update assignment scores.
 - **NOTE**:
-    - You can run the grader for a single person and/or a single platform by `python3 grader.py -w <week_num> -u <uni> -p <platform_name_used_in_code>`. This is very useful to crosscheck certain scores.
+    - The grader can be run for a single person and/or a single platform using `python3 grader.py -w <week_num> -u <uni> -p <platform_name_used_in_code>`. This is very useful to crosscheck certain scores (if code/screenshots differ from what the grader calculated)
 
 
 ## Current Shortcomings
