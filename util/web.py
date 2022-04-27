@@ -5,6 +5,9 @@ import uuid
 import requests as r
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from constants import CHROME_DRIVER_PATH
 import random
 
@@ -16,6 +19,7 @@ class WebRequest:
         self.last_request_ts_millis = 0
         self.web_request_obj_id = str(uuid.uuid4())
         self.MAX_JITTER_MILLIS = 2000
+        self.WAIT_UNTIL_TS_SEC = 5
 
         options = Options()
         options.headless = True
@@ -39,6 +43,16 @@ class WebRequest:
         driver = webdriver.Chrome(options=self.scraper_options, executable_path=str(CHROME_DRIVER_PATH))
         driver.get(url)
         return driver        
+
+    # until_presence_of is a css selector that the driver will wait for before returning
+    def wait_until_presence_of(self, driver, until_presence_of: str) -> webdriver.Chrome:
+        if until_presence_of is not None and until_presence_of != "":
+            try:
+                WebDriverWait(driver, self.WAIT_UNTIL_TS_SEC).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, until_presence_of)))
+            finally:
+                return driver
+        return driver
+
 
     def get(self, url: str, is_json=True):
         """

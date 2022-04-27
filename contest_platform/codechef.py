@@ -88,8 +88,10 @@ class Codechef(ContestPlatformBase):
 
             curr_contests = curr_contests["contests"]
             for curr_contest in curr_contests:
-                curr_contest_dt = datetime.fromisoformat(curr_contest["contest_end_date_iso"])
-                if in_between_dt(curr_contest_dt, gd.week_start_dt, gd.week_end_dt):
+                curr_contest_start_dt = datetime.fromisoformat(curr_contest["contest_start_date_iso"])
+                curr_contest_end_dt = datetime.fromisoformat(curr_contest["contest_end_date_iso"])
+                # If start time of contest is b/w grading week, or end time of contest is b/w grading week, or the grading week is in b/w the super long contest (possibly spanning multiple weeks)
+                if in_between_dt(curr_contest_start_dt, gd.week_start_dt, gd.week_end_dt) or in_between_dt(curr_contest_end_dt, gd.week_start_dt, gd.week_end_dt) or in_between_dt(gd.week_start_dt, curr_contest_start_dt, curr_contest_end_dt):
                     parent_contests.append(curr_contest)
 
             if datetime.fromisoformat(curr_contests[-1]["contest_end_date_iso"]) < gd.week_start_dt:
@@ -144,7 +146,8 @@ class Codechef(ContestPlatformBase):
 
 
         contests = [{**contest, "startDatetime": datetime.fromisoformat(contest["contest_end_date_iso"])} for contest in child_contests]
-        contests = [contest for contest in contests if in_between_dt(contest["startDatetime"], gd.week_start_dt, gd.week_end_dt)]
+        # Already filtered more accurately above (parent contests), so need for the following line.
+        # contests = [contest for contest in contests if in_between_dt(contest["startDatetime"], gd.week_start_dt, gd.week_end_dt)]
         LOG.debug(f"Contests: {[c['child_contest_code'] for c in contests]}")
         return [Contest(str(contest["child_contest_code"])) for contest in contests]
         
@@ -167,13 +170,24 @@ class Codechef(ContestPlatformBase):
 
         # Get user's accepted solutions
         # Need to filter these trs a little more because codechef returns prefix matches along with exact matches for username
-        direct_tr_vals = driver.find_elements_by_css_selector("table[class='dataTable'] > tbody > tr")
+        direct_tr_vals = driver.find_elements_by_css_selector("table[class*='MuiTable-root'] > tbody > tr")
+
+        # With the latest update to Codechef, it waits a little more before loading the ranks.
+        # So, wait until it has loaded them
+        if any(["Loading" in tr_val.text for tr_val in direct_tr_vals]):
+            Codechef.WR.wait_until_presence_of(driver, "a[href*='https://www.codechef.com/users']")
+
+        # Collect trs again, because DOM could've updated and resulted in stale elements (i.e older tr_vals getting deleted from the page)
+        direct_tr_vals = driver.find_elements_by_css_selector("table[class*='MuiTable-root'] > tbody > tr")
+        LOG.debug(f"Num direct tr vals: {len(direct_tr_vals)}")
         tr_vals = []
         for tr_val in direct_tr_vals:
-            user_handle_a_tags = tr_val.find_elements_by_css_selector("td[class='user-handle'] div > a")
+            user_handle_a_tags = tr_val.find_elements_by_css_selector("td div > a[href*='https://www.codechef.com/users']")
+            LOG.debug(f"Num user handle a tags: {len(user_handle_a_tags)}")
             if len(user_handle_a_tags) == 1:
                 user_handle_a_tag = user_handle_a_tags[0]
                 user_link = user_handle_a_tag.get_attribute("href")
+                LOG.debug(f"User link: {user_link}")
                 if user_link.split("/")[-1] == usr_handle:
                     tr_vals.append(tr_val)
 
@@ -188,13 +202,13 @@ class Codechef(ContestPlatformBase):
 
 
         # Get table headers for problem names
-        th_vals = driver.find_elements_by_css_selector("table[class='dataTable'] > thead > tr > th")
+        th_vals = driver.find_elements_by_css_selector("table[class*='MuiTable-root'] > thead > tr > th")
         LOG.debug(f"Num th found: {len(th_vals)}")
 
         # Calc offset
         # The 4th/5th name onwards are the problem names. ex: https://www.codechef.com/rankings/COOK137C?order=asc&search=idm2114&sortBy=rank vs https://www.codechef.com/rankings/START23A?order=asc&search=idm2114&sortBy=rank
         offset=3
-        if len(th_vals[3].find_elements_by_css_selector("a > div:nth-child(2)")) == 0:
+        if len(th_vals[3].find_elements_by_css_selector("div > a")) == 0:
             offset += 1
 
         # Push td and th offset nums
@@ -202,13 +216,13 @@ class Codechef(ContestPlatformBase):
         th_vals = th_vals[offset:]
 
         # Get on with problems names and score    
-        problem_names = [th_val.find_element_by_css_selector("a").get_attribute("href").split("sortBy=")[1].strip() for th_val in th_vals]
+        problem_names = [th_val.find_element_by_css_selector("a").get_attribute("href").split("problems/")[1].strip() for th_val in th_vals]
         LOG.debug(f"problem names: {problem_names}")
 
         solved_questions = set()
         for i, val in enumerate(td_vals):
             LOG.debug(f"[MAJOR*****] val: {val.text}")
-            has_answered = val.find_elements_by_css_selector("div[class='scored-problem'] > a")
+            has_answered = val.find_elements_by_css_selector("a")
             if len(has_answered) not in [0, 1]:
                 fail(f"Unexpected count: [{len(has_answered)}] of answers found at: [{submissions_url}]", LOG)
             if len(has_answered) == 1:
