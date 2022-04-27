@@ -14,14 +14,32 @@ LOG = get_logger("CalculatePoints")
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Events preprocessor - to generate graders')
+    parser = argparse.ArgumentParser(description='Events preprocessor - to generate grades')
     parser.add_argument('-w', '--week', help="Week number, ex: 5, or 6...", required=True, dest="week_num", type=int)
+    parser.add_argument('-u', '--uni', help="For a particular uni (eg: ar4160, ak3232)", dest="uni")
+    parser.add_argument('-p', '--platform', help="For a particular platform (eg: Leetcode, Codeforces, Spoj)", dest="platform_name")
     return parser.parse_args()
 
 
-def calculate(week_num: int):
-    grade_sheet_path = CACHE_PATH.joinpath(f"grades_{week_num}.csv")
-    grade_events_path = CACHE_PATH.joinpath(f"grading_events_{week_num}.log")
+def prepare_file_name(prefix: str, extension: str, week_num: int, uni: str, platform_name: str) -> str:
+    # Create grade file if not present
+    file_name = f"{prefix}_{week_num}"
+    if uni is not None and uni != "":
+        file_name += f"_{uni}"
+    if platform_name is not None and platform_name != "":
+        file_name += f"_{platform_name}"
+    file_name += f".{extension}"
+    return file_name
+
+
+def calculate(week_num: int, uni: str, platform_name: str):
+    # Create grade file if not present
+    grade_sheet_name = prepare_file_name("grades", "csv", week_num, uni, platform_name)
+    grade_sheet_path = CACHE_PATH.joinpath(grade_sheet_name) #(f"grades_{week_num}.csv")
+
+    grade_events_name = prepare_file_name("grading_events", "log", week_num, uni, platform_name)
+    grade_events_path = CACHE_PATH.joinpath(grade_events_name) #(f"grading_events_{week_num}.log")
+
     uni_to_courseworks_path = CACHE_PATH.joinpath("uni_courseworks_id.csv")
     
     if not grade_events_path.exists():
@@ -119,4 +137,4 @@ def calculate(week_num: int):
 
 if __name__ == "__main__":
     args = parse_args()
-    calculate(args.week_num)
+    calculate(args.week_num, args.uni, args.platform_name)
